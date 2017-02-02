@@ -118,7 +118,7 @@ public class Pathfinder extends Application {
 	public void showMap(Stage primaryStage, TileMap mainMap) {
 		BorderPane root = new BorderPane();
 		GridPane grid = new GridPane();
-		char [][]tiles = mainMap.getTiles();
+		Node [][]tiles = mainMap.getTiles();
 		
 		Label hValue = new Label("h-value: ");
 		Label gValue = new Label("g-value: ");
@@ -273,14 +273,14 @@ public class Pathfinder extends Application {
 	 * @param grid - The current GridPane
 	 * @param tiles - The 2D array version of the grid
 	 */
-	private void colorGrid(GridPane grid, char[][] tiles) {
+	private void colorGrid(GridPane grid, Node[][] tiles) {
 		Color terrain;
 		for (int i = 0; i < TileMap.NUM_ROWS; i++) {
 			for (int j = 0; j < TileMap.NUM_COLS; j++) {
 				Rectangle rec = new Rectangle();
 				rec.setHeight(REC_HEIGHT);
 				rec.setWidth(REC_WIDTH);
-				terrain = isColor(tiles[i][j]);
+				terrain = isColor(tiles[i][j].getTerrain());
 				rec.setFill(terrain);
 				GridPane.setRowIndex(rec, i);
 				GridPane.setColumnIndex(rec, j);

@@ -30,7 +30,7 @@ public class TileMap {
 	private static final int RIGHT = 2;
 	private static final int DOWN = 3;
 	
-	private char [][] tiles;
+	private Node [][] tiles;
 	private Coords [] roughTerrainCenters;
 	private Coords start;
 	private Coords goal;
@@ -41,7 +41,7 @@ public class TileMap {
 	 * grid numbers.
 	 */
 	public TileMap() {
-		tiles  = new char[NUM_ROWS][NUM_COLS];
+		tiles  = new Node[NUM_ROWS][NUM_COLS];
 		roughTerrainCenters = new Coords[8];
 	}
 	
@@ -204,7 +204,7 @@ public class TileMap {
 		goal = null;
 	}
 	
-	public char[][] getTiles() {
+	public Node[][] getTiles() {
 		return tiles;
 	}
 	
@@ -242,7 +242,9 @@ public class TileMap {
 		for (int i = 0; i < NUM_ROWS; i++) {
 			String currentRow = scanner.nextLine();
 			for (int j = 0; j < NUM_COLS; j++) {
-				tiles[i][j] = currentRow.charAt(j);
+				Node newNode = new Node();
+				newNode.setTerrain(currentRow.charAt(j));
+				tiles[i][j] = newNode;
 			}
 		}
 		
@@ -322,7 +324,7 @@ public class TileMap {
 					}
 					
 					if (probability(50)) {
-						tiles[currY][currX] = '2';
+						tiles[currY][currX].setTerrain('2');
 					}
 				}
 			}
@@ -346,7 +348,10 @@ public class TileMap {
 		
 		for (int i = 0; i < tiles.length; i++) {
 			for (int j = 0; j < tiles[i].length; j++) {
-				tiles[i][j] = '1';
+				Node newNode = new Node();
+				newNode.setCoords(new Coords(j, i));
+				newNode.setTerrain('1');
+				tiles[i][j] = newNode;
 			}
 		}
 	}
@@ -377,11 +382,10 @@ public class TileMap {
 	public void deleteAllHighways() {
 		for (int i = 0; i < NUM_ROWS; i++) {
 			for (int j = 0; j < NUM_COLS; j++) {
-				if (tiles[i][j] == 'a') {
-					tiles[i][j] = '1';
-				} else if (tiles[i][j] == 'b') {
-					tiles[i][j] = '2';
-				}
+				if (tiles[i][j].getTerrain() == 'a') {
+					tiles[i][j].setTerrain('1');;
+				} else if (tiles[i][j].getTerrain() == 'b') {
+					tiles[i][j].setTerrain('2');			}
 			}
 		}
 	}
@@ -415,15 +419,15 @@ public class TileMap {
 			
 			while ((currX >= 0 && currX < NUM_COLS) && (currY >= 0 && currY < NUM_ROWS) && successfulTile) { // while inside the grid
 				highway.add(currTile);
-				if (tiles[currY][currX] == 'a' || tiles[currY][currX] == 'b') {
+				if (tiles[currY][currX].getTerrain() == 'a' || tiles[currY][currX].getTerrain() == 'b') {
 					deleteSingleHighway(highway);
 					currX = startPoint.getX();
 					currY = startPoint.getY();
 					successfulTile = false;
-				} else if (tiles[currY][currX] == '1') {
-					tiles[currY][currX] = 'a';
-				} else if (tiles[currY][currX] == '2') {
-					tiles[currY][currX] = 'b';
+				} else if (tiles[currY][currX].getTerrain() == '1') {
+					tiles[currY][currX].setTerrain('a');
+				} else if (tiles[currY][currX].getTerrain() == '2') {
+					tiles[currY][currX].setTerrain('b');
 				} else {
 					System.out.println("Messed up tile: " + tiles[currY][currX]);
 				}
@@ -464,10 +468,10 @@ public class TileMap {
 			currX = current.getX();
 			currY = current.getY();
 			
-			if (tiles[currY][currX] == 'a') {
-				tiles[currY][currX] = '1';
-			} else if (tiles[currY][currX] == 'b') {
-				tiles[currY][currX] = '2';
+			if (tiles[currY][currX].getTerrain() == 'a') {
+				tiles[currY][currX].setTerrain('1');
+			} else if (tiles[currY][currX].getTerrain() == 'b') {
+				tiles[currY][currX].setTerrain('2');
 			}
 			
 		}
@@ -537,10 +541,10 @@ public class TileMap {
 				currX = curr.getX();
 				currY = curr.getY();
 				
-				if (tiles[currY][currX] == 'a' || tiles[currY][currX] == 'b' || tiles[currY][currX] == '0') {
+				if (tiles[currY][currX].getTerrain() == 'a' || tiles[currY][currX].getTerrain() == 'b' || tiles[currY][currX].getTerrain() == '0') {
 					curr = generateCoords();
 				} else {
-					tiles[currY][currX] = '0';
+					tiles[currY][currX].setTerrain('0');
 					success = true;
 				}
 				

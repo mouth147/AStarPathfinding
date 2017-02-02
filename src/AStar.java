@@ -5,7 +5,7 @@ import java.util.PriorityQueue;
 
 public class AStar {
 
-	private char [][] tiles;
+	private Node [][] tiles;
 	private Coords start;
 	private Coords goal;
 	private NodeComparator fComparator = new NodeComparator();
@@ -14,7 +14,7 @@ public class AStar {
 	HashMap<Node, Double> gValues = new HashMap<Node, Double>(100);
 	//HashMap<Node, Double> fValues = new HashMap<Node, Double>(100);
 	
-	public AStar(char [][] tiles, Coords start, Coords goal) {
+	public AStar(Node [][] tiles, Coords start, Coords goal) {
 		this.tiles = tiles;
 		this.start = start;
 		this.goal = goal;
@@ -36,6 +36,7 @@ public class AStar {
 			current = openList.remove();
 			closedList.add(current);
 			
+			System.out.println("Coords: " + current.getCoords());
 			if (current.getCoords().equals(goal)) {
 				System.out.println("Path found!");
 				return optimalPath(current);
@@ -118,17 +119,14 @@ public class AStar {
 					continue;
 				}
 				counter++;
-				Node newNode = new Node();
-				Coords newCoords = new Coords(currX, currY);
-				newNode.setCoords(newCoords);
-				newNode.setTerrain(tiles[currY][currX]);
+				Node neighbor = tiles[currY][currX];
 				if ((i == 0 && j == 0) || (i == 0 && j == 2) || (i == 2 && j == 0) || (i == 2 && j == 2)) {
-					newNode.setG(getGValue(current, newNode, true));
+					neighbor.setG(getGValue(current, neighbor, true));
 				} else {
-					newNode.setG(getGValue(current, newNode, false));
+					neighbor.setG(getGValue(current, neighbor, false));
 				}
-				gValues.put(newNode, newNode.getG());
-				current.neighbors[counter] = newNode;
+				gValues.put(neighbor, neighbor.getG());
+				current.neighbors[counter] = neighbor;
 				
 			}
 		}
