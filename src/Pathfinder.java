@@ -1,4 +1,6 @@
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 import javafx.application.Application;
 import javafx.concurrent.Task;
@@ -176,9 +178,10 @@ public class Pathfinder extends Application {
 		MenuItem exit = new MenuItem("Exit");
 		
 		MenuItem startAndGoal = new MenuItem("Generate start and goal tiles");
+		MenuItem solveAStar = new MenuItem("Find optimal path using A*");
 		
 		fileMenu.getItems().addAll(exportMap, exit);
-		currentMenu.getItems().addAll(startAndGoal);
+		currentMenu.getItems().addAll(startAndGoal, solveAStar);
 		
 		/*
 		 * Export map Action Handler
@@ -208,6 +211,30 @@ public class Pathfinder extends Application {
 				mainMap.generateStartAndGoal();
 				startValue.setText(mainMap.getStartTile().toString());
 				goalValue.setText(mainMap.getGoalTile().toString());
+			}
+		});
+		
+		/*
+		 * Solve A star button
+		 */
+		solveAStar.setOnAction(new EventHandler<ActionEvent>() {
+			
+			@Override
+			public void handle(ActionEvent event) {
+				
+				AStar astar = new AStar(mainMap.getTiles(), mainMap.getStartTile(), mainMap.getGoalTile());
+				ArrayList<Node> path = astar.solve();
+				
+				if (path == null) {
+					System.out.println("No path found.");
+				} else {
+					Iterator<Node> itr = path.iterator();
+					
+					while (itr.hasNext()) {
+						Node curr = itr.next();
+						System.out.println(curr.getCoords());
+					}
+				}
 			}
 		});
 		
