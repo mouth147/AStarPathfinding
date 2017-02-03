@@ -149,7 +149,7 @@ public class Pathfinder extends Application {
 		goalTiles.getChildren().addAll(goal, goalValue);
 		
 		vbox.getChildren().addAll(hValue, gValue, fValue, startTiles, goalTiles);
-		MenuBar menuBar = createMenu(primaryStage, mainMap, startValue, goalValue);
+		MenuBar menuBar = createMenu(primaryStage, mainMap, startValue, goalValue, grid);
 		
 		colorGrid(grid, tiles);
 		root.setTop(menuBar);
@@ -167,7 +167,7 @@ public class Pathfinder extends Application {
 	 * 
 	 * @return Returns a MenuBar object ready to go.
 	 */
-	public MenuBar createMenu(Stage primaryStage, TileMap mainMap, Label startValue, Label goalValue) {
+	public MenuBar createMenu(Stage primaryStage, TileMap mainMap, Label startValue, Label goalValue, GridPane grid) {
 		MenuBar menuBar = new MenuBar();
 		
 		Menu fileMenu = new Menu("File");
@@ -222,19 +222,18 @@ public class Pathfinder extends Application {
 			@Override
 			public void handle(ActionEvent event) {
 				
-				AStar astar = new AStar(mainMap.getTiles(), mainMap.getStartTile(), mainMap.getGoalTile());
-				ArrayList<Node> path = astar.solve();
-				
-				if (path == null) {
-					System.out.println("No path found.");
-				} else {
-					Iterator<Node> itr = path.iterator();
-					
-					while (itr.hasNext()) {
-						Node curr = itr.next();
-						System.out.println(curr.getCoords());
+				Task<ArrayList<Node>> task = new Task<ArrayList<Node>>() {
+
+					@Override
+					protected ArrayList<Node> call() throws Exception {
+						AStar astar = new AStar(mainMap.getTiles(), mainMap.getStartTile(), mainMap.getGoalTile());
+						ArrayList<Node> path = astar.solve();
+						return path;
 					}
-				}
+					
+				};
+				
+				colorPath(grid, task);
 			}
 		});
 		
@@ -342,6 +341,36 @@ public class Pathfinder extends Application {
 			System.out.println("Thread finished!");
 			TileMap mainMap = task.getValue();
 			showMap(primaryStage, mainMap);
+		});
+	}
+
+	/**
+	 * @param grid
+	 * @param task
+	 */
+	public void colorPath(GridPane grid, Task<ArrayList<Node>> task) {
+		Thread th = new Thread(task);
+		th.setDaemon(true);
+		th.start();
+		
+		task.setOnSucceeded(e -> {
+			ArrayList<Node> path = task.getValue();
+			if (path == null) {
+				System.out.println("No path found!");
+			} else {
+				Iterator<Node> itr = path.iterator();
+				while(itr.hasNext()) {
+					Node curr = itr.next();
+					Rectangle rec = new Rectangle();
+					rec.setHeight(REC_HEIGHT);
+					rec.setWidth(REC_WIDTH);
+					rec.setFill(Color.DARKORANGE);
+					GridPane.setColumnIndex(rec, curr.getCoords().getX());
+					GridPane.setRowIndex(rec, curr.getCoords().getY());
+					grid.getChildren().addAll(rec);
+					
+				}
+			}
 		});
 	}
 	

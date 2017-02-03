@@ -46,6 +46,7 @@ public class AStar {
 			
 			for (int i = 0; i < current.neighbors.length; i++) {
 				Node neighbor = current.neighbors[i];
+				//System.out.println("Current neighbor: " + neighbor);
 				if (!isValidNeighbor(neighbor)) {
 					continue;
 				}
@@ -99,7 +100,7 @@ public class AStar {
 			return false;
 		}
 		
-		System.out.println("Current node is a valid neighbor: " + current.getCoords());
+		//System.out.println("Current node is a valid neighbor: " + current.getCoords());
 		
 		return true;
 	}
@@ -120,6 +121,7 @@ public class AStar {
 				}
 				counter++;
 				Node neighbor = tiles[currY][currX];
+				System.out.println("Neighbor: " + neighbor.getCoords());
 				if ((i == 0 && j == 0) || (i == 0 && j == 2) || (i == 2 && j == 0) || (i == 2 && j == 2)) {
 					neighbor.setG(getGValue(current, neighbor, true));
 				} else {

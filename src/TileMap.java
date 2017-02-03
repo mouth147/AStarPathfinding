@@ -243,6 +243,7 @@ public class TileMap {
 			String currentRow = scanner.nextLine();
 			for (int j = 0; j < NUM_COLS; j++) {
 				Node newNode = new Node();
+				newNode.setCoords(new Coords(j, i));
 				newNode.setTerrain(currentRow.charAt(j));
 				tiles[i][j] = newNode;
 			}
@@ -346,12 +347,13 @@ public class TileMap {
 	 */
 	public void initialSetUp() {
 		
-		for (int i = 0; i < tiles.length; i++) {
-			for (int j = 0; j < tiles[i].length; j++) {
+		for (int i = 0; i < NUM_COLS; i++) {
+			for (int j = 0; j < NUM_ROWS; j++) {
 				Node newNode = new Node();
 				newNode.setCoords(new Coords(j, i));
+				//System.out.println("Current x,y: " + j + "," + i + " | Coords: " + newNode.getCoords());
 				newNode.setTerrain('1');
-				tiles[i][j] = newNode;
+				tiles[j][i] = newNode;
 			}
 		}
 	}
@@ -491,7 +493,7 @@ public class TileMap {
 		
 		for (int i = 0; i < 120; i++) {
 			for (int j = 0; j < 160; j++) {
-				str += tiles[i][j];
+				str += tiles[i][j].getTerrain();
 			}
 			str += "\n";
 		}

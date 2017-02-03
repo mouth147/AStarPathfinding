@@ -22,18 +22,21 @@ public class Test {
 		for (int i = 0; i < 10; i++) {
 			for (int j = 0; j < 10; j++) {
 				Node newNode = new Node();
+				newNode.setCoords(new Coords(j, i));
+				System.out.println("Current x,y: " + j + "," + i + " | Coords: " + newNode.getCoords());
+				testTiles[j][i] = newNode;
 				if ( j % 3 == 0) {
-					testTiles[i][j].setTerrain('2');
+					newNode.setTerrain('2');
 				} else if (i % 2 == 0) {
-					testTiles[i][j].setTerrain('a');
+					newNode.setTerrain('a');
 				} else {
-					testTiles[i][j].setTerrain('1');
+					newNode.setTerrain('1');
 				}
 			}
 		}
-		
-		//AStar a = new AStar(testTiles, new Coords(0, 0), new Coords(7, 9));
-		//a.solve();
+		testTiles[5][5].setTerrain('0');
+		AStar a = new AStar(testTiles, new Coords(0, 0), new Coords(7, 9));
+		a.solve();
 	}
 
 }
