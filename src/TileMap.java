@@ -222,6 +222,7 @@ public class TileMap {
 	 * @param filePath - Path of the file
 	 */
 	public void loadMap(String filePath) {
+
 		System.out.println("Loading map...");
 		String fileContents = readFromFile(filePath);
 		Scanner scanner = new Scanner(fileContents);
@@ -350,7 +351,7 @@ public class TileMap {
 		for (int i = 0; i < NUM_COLS; i++) {
 			for (int j = 0; j < NUM_ROWS; j++) {
 				Node newNode = new Node();
-				newNode.setCoords(new Coords(j, i));
+				newNode.setCoords(new Coords(i, j));
 				//System.out.println("Current x,y: " + j + "," + i + " | Coords: " + newNode.getCoords());
 				newNode.setTerrain('1');
 				tiles[j][i] = newNode;
@@ -367,7 +368,9 @@ public class TileMap {
 		boolean isValid;
 		
 		for (int i = 0; i < 4; i++) {
-			
+		if (i == 2 || i == 3) {
+			System.out.println("Almost there...");
+		}
 			isValid = highwayPathBuilder(i, highwayStartPoints[i]);
 			if (!isValid) {
 				deleteAllHighways();
@@ -382,12 +385,12 @@ public class TileMap {
 	 * Goes through the map and replaces all highways with their original terrain.
 	 */
 	public void deleteAllHighways() {
-		for (int i = 0; i < NUM_ROWS; i++) {
-			for (int j = 0; j < NUM_COLS; j++) {
-				if (tiles[i][j].getTerrain() == 'a') {
-					tiles[i][j].setTerrain('1');;
-				} else if (tiles[i][j].getTerrain() == 'b') {
-					tiles[i][j].setTerrain('2');			}
+		for (int i = 0; i < NUM_COLS; i++) {
+			for (int j = 0; j < NUM_ROWS; j++) {
+				if (tiles[j][i].getTerrain() == 'a') {
+					tiles[j][i].setTerrain('1');
+				} else if (tiles[j][i].getTerrain() == 'b') {
+					tiles[j][i].setTerrain('2');			}
 			}
 		}
 	}
@@ -430,8 +433,6 @@ public class TileMap {
 					tiles[currY][currX].setTerrain('a');
 				} else if (tiles[currY][currX].getTerrain() == '2') {
 					tiles[currY][currX].setTerrain('b');
-				} else {
-					System.out.println("Messed up tile: " + tiles[currY][currX]);
 				}
 				
 				if (successfulTile) {

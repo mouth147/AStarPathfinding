@@ -20,7 +20,7 @@ public class AStar {
 		this.goal = goal;
 	}
 	
-	public ArrayList<Node> solve() {
+	public ArrayList<Node> solve(Double wValue) {
 
 		Node startNode = new Node();
 		Node current = null;
@@ -60,7 +60,8 @@ public class AStar {
 				}
 				
 				gValues.replace(neighbor, neighbor.getG());
-				neighbor.setF(neighbor.getG() + diagonalDistanceHeuristic(neighbor));
+				neighbor.setH(diagonalDistanceHeuristic(neighbor));
+				neighbor.setF(neighbor.getG() + (wValue * diagonalDistanceHeuristic(neighbor)));
 				neighbor.setParent(current);
 				
 			}

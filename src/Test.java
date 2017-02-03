@@ -22,8 +22,8 @@ public class Test {
 		for (int i = 0; i < 10; i++) {
 			for (int j = 0; j < 10; j++) {
 				Node newNode = new Node();
-				newNode.setCoords(new Coords(j, i));
-				System.out.println("Current x,y: " + j + "," + i + " | Coords: " + newNode.getCoords());
+				newNode.setCoords(new Coords(i, j));
+				System.out.println("Current x,y: " + i + "," + j + " | Coords: " + newNode.getCoords());
 				testTiles[j][i] = newNode;
 				if ( j % 3 == 0) {
 					newNode.setTerrain('2');
@@ -36,7 +36,7 @@ public class Test {
 		}
 		testTiles[5][5].setTerrain('0');
 		AStar a = new AStar(testTiles, new Coords(0, 0), new Coords(7, 9));
-		a.solve();
+		a.solve(1.0);
 	}
 
 }

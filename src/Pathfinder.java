@@ -1,20 +1,26 @@
 import java.io.File;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 
 import javafx.application.Application;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ProgressIndicator;
+import javafx.scene.control.Slider;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
@@ -30,8 +36,10 @@ public class Pathfinder extends Application {
 	
 	private static final int REC_HEIGHT = 5;
 	private static final int REC_WIDTH = 5;
-	private static final int MAP_HEIGHT = (120 * REC_HEIGHT) + 10;
-	private static final int MAP_WIDTH = (160 * REC_WIDTH) + 130;
+	private static final int MAP_HEIGHT = (120 * REC_HEIGHT) + 40;
+	private static final int MAP_WIDTH = (160 * REC_WIDTH) + 450;
+	private ArrayList<Node> path = null;
+	DecimalFormat decFormat = new DecimalFormat("0.000");
 	
 	/**
 	 * The initial menu to this program. You can either generate a new map, or load
@@ -94,7 +102,9 @@ public class Pathfinder extends Application {
 			@Override
 			public void handle(ActionEvent event) {
 				file = fileChooser.showOpenDialog(primaryStage);
-				progressAndFinish(primaryStage, root, vbox, task);
+				if (file != null) {
+					progressAndFinish(primaryStage, root, vbox, task);
+				}
 			}
 		});
 		
@@ -120,9 +130,12 @@ public class Pathfinder extends Application {
 		GridPane grid = new GridPane();
 		Node [][]tiles = mainMap.getTiles();
 		
-		Label hValue = new Label("h-value: ");
-		Label gValue = new Label("g-value: ");
-		Label fValue = new Label("f-value: ");
+		Label wValue = new Label("W Value: ");
+		Slider wSlider = new Slider();
+		Label hValue = new Label("H Value: ");
+		Label currTile = new Label("Current Tile: ");
+		Label gValue = new Label("G Value: ");
+		Label fValue = new Label("F Value: ");
 		Label start = new Label("Start Tile: ");
 		Label startValue = new Label();
 		Label goal = new Label("Goal Tile: ");
@@ -148,10 +161,25 @@ public class Pathfinder extends Application {
 		startTiles.getChildren().addAll(start, startValue);
 		goalTiles.getChildren().addAll(goal, goalValue);
 		
-		vbox.getChildren().addAll(hValue, gValue, fValue, startTiles, goalTiles);
-		MenuBar menuBar = createMenu(primaryStage, mainMap, startValue, goalValue, grid);
+		wSlider.setMin(1);
+		wSlider.setMax(4);
+		wSlider.setValue(1);
+		wSlider.setShowTickLabels(true);
+		wSlider.setShowTickMarks(true);
+		wSlider.setMajorTickUnit(0.5f);
+		wSlider.setBlockIncrement(0.50f);
+		wSlider.valueProperty().addListener(new ChangeListener<Object>() {
+			
+			@Override
+			public void changed(ObservableValue<?> arg0, Object arg1, Object arg2) {
+				wValue.setText("W Value: " + decFormat.format(wSlider.getValue()));
+			}
+		});
 		
-		colorGrid(grid, tiles);
+		vbox.getChildren().addAll(wValue, wSlider, hValue, gValue, fValue, startTiles, goalTiles, currTile);
+		MenuBar menuBar = createMenu(primaryStage, mainMap, startValue, goalValue, grid, hValue, gValue, fValue, currTile, wSlider);
+		
+		colorGrid(grid, tiles, hValue, gValue, fValue, currTile);
 		root.setTop(menuBar);
 		root.setCenter(grid);
 		root.setRight(vbox);
@@ -167,7 +195,7 @@ public class Pathfinder extends Application {
 	 * 
 	 * @return Returns a MenuBar object ready to go.
 	 */
-	public MenuBar createMenu(Stage primaryStage, TileMap mainMap, Label startValue, Label goalValue, GridPane grid) {
+	public MenuBar createMenu(Stage primaryStage, TileMap mainMap, Label startValue, Label goalValue, GridPane grid, Label hValue, Label gValue, Label fValue, Label currTile, Slider wSlider) {
 		MenuBar menuBar = new MenuBar();
 		
 		Menu fileMenu = new Menu("File");
@@ -179,9 +207,15 @@ public class Pathfinder extends Application {
 		
 		MenuItem startAndGoal = new MenuItem("Generate start and goal tiles");
 		MenuItem solveAStar = new MenuItem("Find optimal path using A*");
+		MenuItem clearPath = new MenuItem("Clear path");
 		
 		fileMenu.getItems().addAll(exportMap, exit);
-		currentMenu.getItems().addAll(startAndGoal, solveAStar);
+		currentMenu.getItems().addAll(startAndGoal, solveAStar, clearPath);
+		if (path == null) {
+			clearPath.setDisable(true);
+		} else {
+			clearPath.setDisable(false);
+		}
 		
 		/*
 		 * Export map Action Handler
@@ -200,6 +234,7 @@ public class Pathfinder extends Application {
 				mainMap.exportMap(file);
 			}
 		});
+		exportMap.setAccelerator(KeyCombination.keyCombination("Ctrl+S"));
 		
 		/*
 		 * Generate start and goal tiles action handler
@@ -209,8 +244,23 @@ public class Pathfinder extends Application {
 			@Override
 			public void handle(ActionEvent event) {
 				mainMap.generateStartAndGoal();
+				if (path != null) {
+					colorGrid(grid, mainMap.getTiles(), hValue, gValue, fValue, currTile);
+				}
 				startValue.setText(mainMap.getStartTile().toString());
 				goalValue.setText(mainMap.getGoalTile().toString());
+			}
+		});
+		
+		/*
+		 * Clear path
+		 */
+		clearPath.setOnAction(new EventHandler<ActionEvent>() {
+			
+			@Override
+			public void handle(ActionEvent event) {
+				colorGrid(grid, mainMap.getTiles(), hValue, gValue, fValue, currTile);
+				clearPath.setDisable(true);
 			}
 		});
 		
@@ -227,13 +277,16 @@ public class Pathfinder extends Application {
 					@Override
 					protected ArrayList<Node> call() throws Exception {
 						AStar astar = new AStar(mainMap.getTiles(), mainMap.getStartTile(), mainMap.getGoalTile());
-						ArrayList<Node> path = astar.solve();
+						ArrayList<Node> path = astar.solve(wSlider.getValue());
 						return path;
 					}
 					
 				};
 				
 				colorPath(grid, task);
+				if (path != null) {
+					clearPath.setDisable(false);
+				}
 			}
 		});
 		
@@ -272,18 +325,25 @@ public class Pathfinder extends Application {
 	 * @param grid - The current GridPane
 	 * @param tiles - The 2D array version of the grid
 	 */
-	private void colorGrid(GridPane grid, Node[][] tiles) {
+	private void colorGrid(GridPane grid, Node[][] tiles, Label hValue, Label gValue, Label fValue, Label currTile) {
 		Color terrain;
 		for (int i = 0; i < TileMap.NUM_ROWS; i++) {
 			for (int j = 0; j < TileMap.NUM_COLS; j++) {
+				Node curr = tiles[i][j];
 				Rectangle rec = new Rectangle();
 				rec.setHeight(REC_HEIGHT);
 				rec.setWidth(REC_WIDTH);
-				terrain = isColor(tiles[i][j].getTerrain());
+				terrain = isColor(curr.getTerrain());
 				rec.setFill(terrain);
 				GridPane.setRowIndex(rec, i);
 				GridPane.setColumnIndex(rec, j);
 				grid.getChildren().addAll(rec);
+				rec.setOnMouseEntered(e -> {
+					hValue.setText("H Value: " + decFormat.format(curr.getH()));
+					gValue.setText("G Value: " + decFormat.format(curr.getG()));
+					fValue.setText("F Value: " + decFormat.format(curr.getF()));
+					currTile.setText("Current Tile: " + curr.getCoords().getX() + ", " + curr.getCoords().getY());
+				});
 			}
 		}
 	}
@@ -340,6 +400,8 @@ public class Pathfinder extends Application {
 		task.setOnSucceeded(e -> { // Once the thread is done executing open the map.
 			System.out.println("Thread finished!");
 			TileMap mainMap = task.getValue();
+			root.getChildren().remove(layer);
+			vbox.setDisable(false);
 			showMap(primaryStage, mainMap);
 		});
 	}
@@ -354,9 +416,16 @@ public class Pathfinder extends Application {
 		th.start();
 		
 		task.setOnSucceeded(e -> {
-			ArrayList<Node> path = task.getValue();
+			path = task.getValue();
 			if (path == null) {
 				System.out.println("No path found!");
+				Alert alert	= new Alert(AlertType.ERROR);
+				alert.setTitle("Error!");
+				alert.setHeaderText("Uh oh, something went wrong.");
+				// Do getDialogPane with label to avoid text getting cut off
+				alert.getDialogPane().setContent(new Label("No path found for A* algorithm! Try generating new start and goal tiles."));
+				alert.showAndWait();
+				
 			} else {
 				Iterator<Node> itr = path.iterator();
 				while(itr.hasNext()) {
