@@ -39,6 +39,7 @@ public class AStar {
 			//System.out.println("Coords: " + current.getCoords());
 			if (current.getCoords().equals(goal)) {
 				//System.out.println("Path found!");
+				System.out.println("Nodes expanded: " + closedList.size());
 				return optimalPath(current);
 			}
 			
@@ -71,8 +72,13 @@ public class AStar {
 					case "Manhattan":
 						neighbor.setF(neighbor.getG() + (wValue * manhattanDistance(neighbor)));
 						break;
+<<<<<<< HEAD
 					case "Fast Approximate":
 						neighbor.setF(neighbor.getG() + (wValue * fastApproximateDistance(neighbor)));
+=======
+					case "Enhanced Manhattan":
+						neighbor.setF(neighbor.getG() + (wValue * enhancedManhattan(neighbor)));
+>>>>>>> 520930294f0aa845a2b6a701060dfa8630d19afe
 						break;
 					case "Euclidean":
 					default:
@@ -85,6 +91,7 @@ public class AStar {
 			}
 		}
 		
+		System.out.println("Nodes expanded: " + closedList.size());
 		return null;
 		
 	}
@@ -173,6 +180,17 @@ public class AStar {
 		dy = Math.abs(coords.getY() - goal.getY());
 		
 		return (dx + dy);
+	}
+	
+	public double enhancedManhattan(Node next) {
+		
+		double dx, dy, minPathLength = 100, avgDiagonal = ((Math.sqrt(2) + Math.sqrt(8)) / 2), avgNon = 1.5;
+		Coords coords = next.getCoords();
+		
+		dx = Math.abs(coords.getX() - goal.getX());
+		dy = Math.abs(coords.getY() - goal.getY());
+		
+		return ((avgNon * (dx + dy)) + (avgDiagonal * Math.sqrt(dx * dx + dy * dy))) / minPathLength;
 	}
 	
 	public double euclideanDistance(Node next) {
