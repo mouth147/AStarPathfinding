@@ -71,6 +71,9 @@ public class AStar {
 					case "Manhattan":
 						neighbor.setF(neighbor.getG() + (wValue * manhattanDistance(neighbor)));
 						break;
+					case "Fast Approximate":
+						neighbor.setF(neighbor.getG() + (wValue * fastApproximateDistance(neighbor)));
+						break;
 					case "Euclidean":
 					default:
 						neighbor.setF(neighbor.getG() + (wValue * euclideanDistance(neighbor)));
@@ -178,9 +181,38 @@ public class AStar {
 		Coords coords = next.getCoords();
 		
 		dx = Math.abs(coords.getX() - goal.getX());
-		dy = Math.abs(coords.getX() - goal.getX());
+		dy = Math.abs(coords.getY() - goal.getY());
 		
 		return Math.sqrt(dx * dx + dy * dy);
+	}
+	
+	/*
+	 * Based on a 2003 article on a function that can approximate distance without using square roots 
+	 * within 2.5% average error (5% maximum error). This makes the function potentially inadmissible
+	 * as a heuristic function for A*. Should mostly work similarly to Euclidean distance.
+	 * 
+	 * Source: http://www.flipcode.com/archives/Fast_Approximate_Distance_Functions.shtml
+	 */
+	public double fastApproximateDistance(Node next) {
+		
+		int dx, dy;
+		int min, max, approx;
+		Coords coords = next.getCoords();
+		
+		dx = Math.abs(coords.getX() - goal.getX());
+		dy = Math.abs(coords.getY() - goal.getY());
+		
+		max = Math.max(dx, dy);
+		min = Math.min(dx, dy);
+		
+		/* EXPLANATION FOR THE MAGIC NUMBERS
+		 * 1007 and 441 are the numerators for the coefficients of the linear combinations of the functions*/
+		approx = (max * 1007) + (min * 441);
+		if (max < (min << 4 ))
+				approx -= (max * 40); 			// figuring out how to explain this
+		
+		/*Original code has " >> 10" in place of "/ 1024.0 "; I'm just afraid to bitshift right*/
+		return (double)((approx + 512) / 1024.0 );
 	}
 	
 	public double getGValue(Node current, Node next, boolean diagonal) {
