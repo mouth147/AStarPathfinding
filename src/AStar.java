@@ -72,13 +72,11 @@ public class AStar {
 					case "Manhattan":
 						neighbor.setF(neighbor.getG() + (wValue * manhattanDistance(neighbor)));
 						break;
-<<<<<<< HEAD
 					case "Fast Approximate":
 						neighbor.setF(neighbor.getG() + (wValue * fastApproximateDistance(neighbor)));
-=======
+						break;
 					case "Enhanced Manhattan":
 						neighbor.setF(neighbor.getG() + (wValue * enhancedManhattan(neighbor)));
->>>>>>> 520930294f0aa845a2b6a701060dfa8630d19afe
 						break;
 					case "Euclidean":
 					default:

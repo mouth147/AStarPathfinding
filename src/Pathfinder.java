@@ -133,7 +133,7 @@ public class Pathfinder extends Application {
 		
 		Label hLabel = new Label("Heuristics: ");
 		ChoiceBox<String> heuristics = new ChoiceBox<String>();
-		heuristics.getItems().addAll("Diagonal", "Manhattan", "Euclidean", "Enhanced Manhattan");
+		heuristics.getItems().addAll("Diagonal", "Manhattan", "Euclidean", "Enhanced Manhattan", "Fast Approximate");
 		Label wValue = new Label("W Value: ");
 		Slider wSlider = new Slider();
 		Label hValue = new Label("H Value: ");
