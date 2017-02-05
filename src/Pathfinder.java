@@ -15,6 +15,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
@@ -130,6 +131,9 @@ public class Pathfinder extends Application {
 		GridPane grid = new GridPane();
 		Node [][]tiles = mainMap.getTiles();
 		
+		Label hLabel = new Label("Heuristics: ");
+		ChoiceBox<String> heuristics = new ChoiceBox<String>();
+		heuristics.getItems().addAll("Diagonal", "Manhattan", "Euclidean");
 		Label wValue = new Label("W Value: ");
 		Slider wSlider = new Slider();
 		Label hValue = new Label("H Value: ");
@@ -176,8 +180,8 @@ public class Pathfinder extends Application {
 			}
 		});
 		
-		vbox.getChildren().addAll(wValue, wSlider, hValue, gValue, fValue, startTiles, goalTiles, currTile);
-		MenuBar menuBar = createMenu(primaryStage, mainMap, startValue, goalValue, grid, hValue, gValue, fValue, currTile, wSlider);
+		vbox.getChildren().addAll(hLabel, heuristics, wValue, wSlider, hValue, gValue, fValue, startTiles, goalTiles, currTile);
+		MenuBar menuBar = createMenu(primaryStage, mainMap, startValue, goalValue, grid, hValue, gValue, fValue, currTile, wSlider, heuristics);
 		
 		colorGrid(grid, tiles, hValue, gValue, fValue, currTile);
 		root.setTop(menuBar);
@@ -195,7 +199,7 @@ public class Pathfinder extends Application {
 	 * 
 	 * @return Returns a MenuBar object ready to go.
 	 */
-	public MenuBar createMenu(Stage primaryStage, TileMap mainMap, Label startValue, Label goalValue, GridPane grid, Label hValue, Label gValue, Label fValue, Label currTile, Slider wSlider) {
+	public MenuBar createMenu(Stage primaryStage, TileMap mainMap, Label startValue, Label goalValue, GridPane grid, Label hValue, Label gValue, Label fValue, Label currTile, Slider wSlider, ChoiceBox<String> heuristics) {
 		MenuBar menuBar = new MenuBar();
 		
 		Menu fileMenu = new Menu("File");
@@ -207,10 +211,11 @@ public class Pathfinder extends Application {
 		
 		MenuItem startAndGoal = new MenuItem("Generate start and goal tiles");
 		MenuItem solveAStar = new MenuItem("Find optimal path using A*");
+		MenuItem solveUniformCost = new MenuItem("Find optimal path using Uniform Cost");
 		MenuItem clearPath = new MenuItem("Clear path");
 		
 		fileMenu.getItems().addAll(exportMap, exit);
-		currentMenu.getItems().addAll(startAndGoal, solveAStar, clearPath);
+		currentMenu.getItems().addAll(startAndGoal, solveAStar, solveUniformCost, clearPath);
 		if (path == null) {
 			clearPath.setDisable(true);
 		} else {
@@ -277,7 +282,53 @@ public class Pathfinder extends Application {
 					@Override
 					protected ArrayList<Node> call() throws Exception {
 						AStar astar = new AStar(mainMap.getTiles(), mainMap.getStartTile(), mainMap.getGoalTile());
-						ArrayList<Node> path = astar.solve(wSlider.getValue());
+						long startTime = System.nanoTime();
+						ArrayList<Node> path = astar.solve(wSlider.getValue(), false, heuristics.getValue());
+						long endTime = System.nanoTime();
+						System.out.println("------------------------------------");
+						System.out.println("A* Search");
+						System.out.println("Heuristic: " + heuristics.getValue());
+						System.out.println("Weight: " + wSlider.getValue());
+						System.out.println("Runtime: " + ((endTime - startTime) / 1000000) + "ms");
+						System.out.println("Path length: " + path.size());
+						System.out.println("------------------------------------");
+
+						return path;
+					}
+					
+				};
+				
+				colorPath(grid, task);
+				if (path != null) {
+					clearPath.setDisable(false);
+				}
+			}
+		});
+		
+		/*
+		 * Solve uniform cost
+		 */
+		solveUniformCost.setOnAction(new EventHandler<ActionEvent>() {
+
+			@Override
+			public void handle(ActionEvent event) {
+				
+				Task<ArrayList<Node>> task = new Task<ArrayList<Node>>() {
+
+					@Override
+					protected ArrayList<Node> call() throws Exception {
+						AStar astar = new AStar(mainMap.getTiles(), mainMap.getStartTile(), mainMap.getGoalTile());
+						long startTime = System.nanoTime();
+						ArrayList<Node> path = astar.solve(wSlider.getValue(), true, heuristics.getValue());
+						long endTime = System.nanoTime();
+						System.out.println("------------------------------------");
+						System.out.println("Uniform Cost Search");
+						System.out.println("Heuristic: " + heuristics.getValue());
+						System.out.println("Weight: " + wSlider.getValue());
+						System.out.println("Runtime: " + ((endTime - startTime) / 1000000) + "ms");
+						System.out.println("Path length: " + path.size());
+						System.out.println("------------------------------------");
+
 						return path;
 					}
 					
@@ -423,7 +474,7 @@ public class Pathfinder extends Application {
 				alert.setTitle("Error!");
 				alert.setHeaderText("Uh oh, something went wrong.");
 				// Do getDialogPane with label to avoid text getting cut off
-				alert.getDialogPane().setContent(new Label("No path found for A* algorithm! Try generating new start and goal tiles."));
+				alert.getDialogPane().setContent(new Label("No path found! Try generating new start and goal tiles."));
 				alert.showAndWait();
 				
 			} else {

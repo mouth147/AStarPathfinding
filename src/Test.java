@@ -36,7 +36,7 @@ public class Test {
 		}
 		testTiles[5][5].setTerrain('0');
 		AStar a = new AStar(testTiles, new Coords(0, 0), new Coords(7, 9));
-		a.solve(1.0);
+		a.solve(1.0, false, "Diagonal");
 	}
 
 }

@@ -20,7 +20,7 @@ public class AStar {
 		this.goal = goal;
 	}
 	
-	public ArrayList<Node> solve(Double wValue) {
+	public ArrayList<Node> solve(Double wValue, boolean isUniformCost, String heuristic) {
 
 		Node startNode = new Node();
 		Node current = null;
@@ -32,13 +32,13 @@ public class AStar {
 		
 		System.out.println("Starting algorithm...");
 		while(!openList.isEmpty()) {
-			System.out.println("openList is not empty.");
+			//System.out.println("openList is not empty.");
 			current = openList.remove();
 			closedList.add(current);
 			
-			System.out.println("Coords: " + current.getCoords());
+			//System.out.println("Coords: " + current.getCoords());
 			if (current.getCoords().equals(goal)) {
-				System.out.println("Path found!");
+				//System.out.println("Path found!");
 				return optimalPath(current);
 			}
 			
@@ -59,9 +59,24 @@ public class AStar {
 					continue;
 				}
 				
-				gValues.replace(neighbor, neighbor.getG());
+				gValues.replace(neighbor, tentativeGScore);
 				neighbor.setH(diagonalDistanceHeuristic(neighbor));
-				neighbor.setF(neighbor.getG() + (wValue * diagonalDistanceHeuristic(neighbor)));
+				if (isUniformCost) {
+					neighbor.setF(tentativeGScore);
+				} else {
+					switch(heuristic) {
+					case "Diagonal":
+						neighbor.setF(neighbor.getG() + (wValue * diagonalDistanceHeuristic(neighbor)));
+						break;
+					case "Manhattan":
+						neighbor.setF(neighbor.getG() + (wValue * manhattanDistance(neighbor)));
+						break;
+					case "Euclidean":
+					default:
+						neighbor.setF(neighbor.getG() + (wValue * euclideanDistance(neighbor)));
+						break;
+					}
+				}
 				neighbor.setParent(current);
 				
 			}
@@ -78,7 +93,7 @@ public class AStar {
 	public ArrayList<Node> optimalPath(Node current) {
 		ArrayList<Node> path = new ArrayList<Node>();
 		for (Node tmp = current; tmp.getParent() != null ; tmp = tmp.getParent()){
-			System.out.println(tmp.getCoords());
+			//System.out.println(tmp.getCoords());
 			path.add(0, tmp);
 		}
 		
@@ -122,7 +137,7 @@ public class AStar {
 				}
 				counter++;
 				Node neighbor = tiles[currY][currX];
-				System.out.println("Neighbor: " + neighbor.getCoords());
+				//System.out.println("Neighbor: " + neighbor.getCoords());
 				if ((i == 0 && j == 0) || (i == 0 && j == 2) || (i == 2 && j == 0) || (i == 2 && j == 2)) {
 					neighbor.setG(getGValue(current, neighbor, true));
 				} else {
@@ -144,6 +159,28 @@ public class AStar {
 		dx = Math.abs(coords.getX() - goal.getX());
 		dy = Math.abs(coords.getY() - goal.getY());
 		return d1 * (dx + dy) + (d2 - 2 * d1) * Math.min(dx, dy);
+	}
+	
+	public double manhattanDistance(Node next) {
+		
+		double dx, dy;
+		Coords coords = next.getCoords();
+		
+		dx = Math.abs(coords.getX() - goal.getX());
+		dy = Math.abs(coords.getY() - goal.getY());
+		
+		return (dx + dy);
+	}
+	
+	public double euclideanDistance(Node next) {
+		
+		double dx, dy;
+		Coords coords = next.getCoords();
+		
+		dx = Math.abs(coords.getX() - goal.getX());
+		dy = Math.abs(coords.getX() - goal.getX());
+		
+		return Math.sqrt(dx * dx + dy * dy);
 	}
 	
 	public double getGValue(Node current, Node next, boolean diagonal) {
