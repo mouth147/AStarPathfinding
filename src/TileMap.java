@@ -113,7 +113,11 @@ public class TileMap {
 		
 		clearStartAndGoal();
 		
-		Coords start = generateTileInRange();
+		Coords start;
+		do {
+			start = generateTileInRange();
+		} while (tiles[start.getY()][start.getX()].getTerrain() != '0');
+		
 		this.start = start;
 		Coords goal;
 		
@@ -123,7 +127,7 @@ public class TileMap {
 			goal = generateTileInRange();
 			
 			success = compareRanges(start, goal);
-		} while (!success);
+		} while (!success && tiles[goal.getY()][goal.getX()].getTerrain() != '0');
 		this.goal = goal;
 		
 	}
@@ -409,7 +413,7 @@ public class TileMap {
 		ArrayList<Coords> highway = new ArrayList<Coords>(200);
 		int currentDirection = getStartingDirection(section);
 		boolean successfulTile;
-		int numOfAttempts = 0;
+		int numOfAttempts = 0, count = 0;
 		Coords currTile;
 		int currX;
 		int currY;
@@ -425,18 +429,24 @@ public class TileMap {
 			while ((currX >= 0 && currX < NUM_COLS) && (currY >= 0 && currY < NUM_ROWS) && successfulTile) { // while inside the grid
 				highway.add(currTile);
 				if (tiles[currY][currX].getTerrain() == 'a' || tiles[currY][currX].getTerrain() == 'b') {
+					highway.remove(currTile);
 					deleteSingleHighway(highway);
 					currX = startPoint.getX();
 					currY = startPoint.getY();
 					successfulTile = false;
 				} else if (tiles[currY][currX].getTerrain() == '1') {
+					count++;
 					tiles[currY][currX].setTerrain('a');
 				} else if (tiles[currY][currX].getTerrain() == '2') {
+					count++;
 					tiles[currY][currX].setTerrain('b');
 				}
 				
 				if (successfulTile) {
-					currentDirection = getNextDirection(currentDirection);
+					if (count == 20) {
+						currentDirection = getNextDirection(currentDirection);
+						count = 0;
+					}
 					Coords newTile = getNextTile(currTile, currentDirection);
 					currX = newTile.getX();
 					currY = newTile.getY();

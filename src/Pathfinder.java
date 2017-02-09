@@ -134,6 +134,7 @@ public class Pathfinder extends Application {
 		Label hLabel = new Label("Heuristics: ");
 		ChoiceBox<String> heuristics = new ChoiceBox<String>();
 		heuristics.getItems().addAll("Diagonal", "Manhattan", "Euclidean", "Enhanced Manhattan", "Fast Approximate");
+		heuristics.getSelectionModel().selectFirst();
 		Label wValue = new Label("W Value: ");
 		Slider wSlider = new Slider();
 		Label hValue = new Label("H Value: ");
@@ -285,20 +286,23 @@ public class Pathfinder extends Application {
 						long startTime = System.nanoTime();
 						ArrayList<Node> path = astar.solve(wSlider.getValue(), false, heuristics.getValue());
 						long endTime = System.nanoTime();
-						System.out.println("------------------------------------");
-						System.out.println("A* Search");
-						System.out.println("Heuristic: " + heuristics.getValue());
-						System.out.println("Weight: " + wSlider.getValue());
-						System.out.println("Runtime: " + ((endTime - startTime) / 1000000) + "ms");
-						System.out.println("Path length: " + path.size());
-						System.out.println("------------------------------------");
+						if (path != null) {
+							System.out.println("------------------------------------");
+							System.out.println("A* Search");
+							System.out.println("Heuristic: " + heuristics.getValue());
+							System.out.println("Weight: " + wSlider.getValue());
+							System.out.println("Runtime: " + ((endTime - startTime) / 1000000) + "ms");
+							System.out.println("Path length: " + path.size());
+							System.out.println("------------------------------------");
+						}
 
 						return path;
 					}
 					
 				};
 				
-				colorPath(grid, task);
+				colorGrid(grid, mainMap.getTiles(), hValue, gValue, fValue, currTile);
+				colorPath(grid, task, hValue, gValue, fValue, currTile);
 				if (path != null) {
 					clearPath.setDisable(false);
 				}
@@ -334,7 +338,8 @@ public class Pathfinder extends Application {
 					
 				};
 				
-				colorPath(grid, task);
+				colorGrid(grid, mainMap.getTiles(), hValue, gValue, fValue, currTile);
+				colorPath(grid, task, hValue, gValue, fValue, currTile);
 				if (path != null) {
 					clearPath.setDisable(false);
 				}
@@ -381,6 +386,9 @@ public class Pathfinder extends Application {
 		for (int i = 0; i < TileMap.NUM_ROWS; i++) {
 			for (int j = 0; j < TileMap.NUM_COLS; j++) {
 				Node curr = tiles[i][j];
+				curr.setF(0);
+				curr.setG(0);
+				curr.setH(0);
 				Rectangle rec = new Rectangle();
 				rec.setHeight(REC_HEIGHT);
 				rec.setWidth(REC_WIDTH);
@@ -461,7 +469,7 @@ public class Pathfinder extends Application {
 	 * @param grid
 	 * @param task
 	 */
-	public void colorPath(GridPane grid, Task<ArrayList<Node>> task) {
+	public void colorPath(GridPane grid, Task<ArrayList<Node>> task, Label hValue, Label gValue, Label fValue, Label currTile) {
 		Thread th = new Thread(task);
 		th.setDaemon(true);
 		th.start();
@@ -488,6 +496,12 @@ public class Pathfinder extends Application {
 					GridPane.setColumnIndex(rec, curr.getCoords().getX());
 					GridPane.setRowIndex(rec, curr.getCoords().getY());
 					grid.getChildren().addAll(rec);
+					rec.setOnMouseEntered(f -> {
+						hValue.setText("H Value: " + decFormat.format(curr.getH()));
+						gValue.setText("G Value: " + decFormat.format(curr.getG()));
+						fValue.setText("F Value: " + decFormat.format(curr.getF()));
+						currTile.setText("Current Tile: " + curr.getCoords().getX() + ", " + curr.getCoords().getY());
+					});
 					
 				}
 			}

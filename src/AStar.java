@@ -1,18 +1,16 @@
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.PriorityQueue;
 
 public class AStar {
 
 	private Node [][] tiles;
+	boolean DEBUG = false;
 	private Coords start;
 	private Coords goal;
 	private NodeComparator fComparator = new NodeComparator();
 	private PriorityQueue<Node> openList = new PriorityQueue<Node>(11, fComparator);
 	private HashSet<Node> closedList = new HashSet<Node>();
-	HashMap<Node, Double> gValues = new HashMap<Node, Double>(100);
-	//HashMap<Node, Double> fValues = new HashMap<Node, Double>(100);
 	
 	public AStar(Node [][] tiles, Coords start, Coords goal) {
 		this.tiles = tiles;
@@ -22,23 +20,48 @@ public class AStar {
 	
 	public ArrayList<Node> solve(Double wValue, boolean isUniformCost, String heuristic) {
 
-		Node startNode = new Node();
+		Node startNode = tiles[start.getY()][start.getX()];
 		Node current = null;
-		startNode.setCoords(start);
-		startNode.setF(0);
+		heuristicSwitch(heuristic, startNode);
 		startNode.setG(0);
+		if (isUniformCost) {
+			startNode.setF(0);
+		} else {
+			startNode.setF(startNode.getG() + (wValue * startNode.getH()));
+		}
 		
 		openList.add(startNode);
 		
 		System.out.println("Starting algorithm...");
 		while(!openList.isEmpty()) {
+			if (DEBUG) {
+				System.out.print("Open list before: ");
+				for (Node curr : openList) {
+					System.out.print("(" + curr.getCoords() + ") - " + curr.getF() + " ");
+				}
+				System.out.println();
+			}
 			//System.out.println("openList is not empty.");
 			current = openList.remove();
 			closedList.add(current);
 			
-			//System.out.println("Coords: " + current.getCoords());
+			if (DEBUG) {
+				System.out.println("---------------------------------------");
+				System.out.println("Current Coords: " + current.getCoords() + " with F value: " + current.getF());
+				System.out.println("---------------------------------------");
+				System.out.print("Open list: ");
+				for (Node curr : openList) {
+					System.out.print("(" + curr.getCoords() + ") - " + curr.getF() + " ");
+				}
+				System.out.print("Closed list: ");
+				for (Node curr : closedList) {
+					System.out.print("(" + curr.getCoords() + ") ");
+				}
+				System.out.println();
+			}
+			
 			if (current.getCoords().equals(goal)) {
-				//System.out.println("Path found!");
+				System.out.println("Path found!");
 				System.out.println("Nodes expanded: " + closedList.size());
 				return optimalPath(current);
 			}
@@ -46,6 +69,7 @@ public class AStar {
 			getNeighbors(current);
 			
 			for (int i = 0; i < current.neighbors.length; i++) {
+				
 				Node neighbor = current.neighbors[i];
 				//System.out.println("Current neighbor: " + neighbor);
 				if (!isValidNeighbor(neighbor)) {
@@ -54,44 +78,58 @@ public class AStar {
 				
 				double tentativeGScore = current.getG() + neighbor.getG();
 				
-				if (!openList.contains(neighbor)) {
-					openList.add(neighbor);
-				} else if (tentativeGScore >= gValues.get(current.neighbors[i])) {
-					continue;
+				if (!openList.contains(neighbor) || tentativeGScore < neighbor.getG()) {
+					neighbor.setG(tentativeGScore);
+					heuristicSwitch(heuristic, neighbor);
+					if (isUniformCost) {
+						neighbor.setF(neighbor.getG());
+					} else {
+						neighbor.setF(neighbor.getG() + (wValue * neighbor.getH()));
+					}
+					neighbor.setParent(current);
+					if (!openList.contains(neighbor)) openList.add(neighbor);
+				} 
+				
+				if (DEBUG) {
+					System.out.println("Neighbor coords: " + neighbor.getCoords());
+					System.out.println("H: " + neighbor.getH());
+					System.out.println("G: " + neighbor.getG());
+					System.out.println("F: " + neighbor.getF());
 				}
 				
-				gValues.replace(neighbor, tentativeGScore);
-				neighbor.setH(diagonalDistanceHeuristic(neighbor));
-				if (isUniformCost) {
-					neighbor.setF(tentativeGScore);
-				} else {
-					switch(heuristic) {
-					case "Diagonal":
-						neighbor.setF(neighbor.getG() + (wValue * diagonalDistanceHeuristic(neighbor)));
-						break;
-					case "Manhattan":
-						neighbor.setF(neighbor.getG() + (wValue * manhattanDistance(neighbor)));
-						break;
-					case "Fast Approximate":
-						neighbor.setF(neighbor.getG() + (wValue * fastApproximateDistance(neighbor)));
-						break;
-					case "Enhanced Manhattan":
-						neighbor.setF(neighbor.getG() + (wValue * enhancedManhattan(neighbor)));
-						break;
-					case "Euclidean":
-					default:
-						neighbor.setF(neighbor.getG() + (wValue * euclideanDistance(neighbor)));
-						break;
-					}
-				}
-				neighbor.setParent(current);
 				
 			}
 		}
 		
+		System.out.println("Path not found");
 		System.out.println("Nodes expanded: " + closedList.size());
 		return null;
 		
+	}
+
+	/**
+	 * @param heuristic
+	 * @param startNode
+	 */
+	public void heuristicSwitch(String heuristic, Node startNode) {
+		switch(heuristic) {
+			case "Diagonal":
+				startNode.setH(diagonalDistanceHeuristic(startNode));
+				break;
+			case "Manhattan":
+				startNode.setH(manhattanDistance(startNode));
+				break;
+			case "Fast Approximate":
+				startNode.setH(fastApproximateDistance(startNode));
+				break;
+			case "Enhanced Manhattan":
+				startNode.setH(enhancedManhattan(startNode));
+				break;
+			case "Euclidean":
+			default:
+				startNode.setH(euclideanDistance(startNode));
+				break;
+		}
 	}
 
 	/**
@@ -100,7 +138,7 @@ public class AStar {
 	 */
 	public ArrayList<Node> optimalPath(Node current) {
 		ArrayList<Node> path = new ArrayList<Node>();
-		for (Node tmp = current; tmp.getParent() != null ; tmp = tmp.getParent()){
+		for (Node tmp = current; tmp != null ; tmp = tmp.getParent()){
 			//System.out.println(tmp.getCoords());
 			path.add(0, tmp);
 		}
@@ -124,7 +162,7 @@ public class AStar {
 			return false;
 		}
 		
-		//System.out.println("Current node is a valid neighbor: " + current.getCoords());
+		if (DEBUG) System.out.println("Current node is a valid neighbor: " + current.getCoords());
 		
 		return true;
 	}
@@ -147,11 +185,16 @@ public class AStar {
 				Node neighbor = tiles[currY][currX];
 				//System.out.println("Neighbor: " + neighbor.getCoords());
 				if ((i == 0 && j == 0) || (i == 0 && j == 2) || (i == 2 && j == 0) || (i == 2 && j == 2)) {
-					neighbor.setG(getGValue(current, neighbor, true));
+					if (neighbor.getG() == 0) {
+						double gValue = getGValue(current, neighbor, true);
+						neighbor.setG(gValue);
+					}
 				} else {
-					neighbor.setG(getGValue(current, neighbor, false));
+					if (neighbor.getG() == 0) {
+						double gValue = getGValue(current, neighbor, false);
+						neighbor.setG(gValue);
+					}
 				}
-				gValues.put(neighbor, neighbor.getG());
 				current.neighbors[counter] = neighbor;
 				
 			}
@@ -237,24 +280,30 @@ public class AStar {
 		char nextTerrain = next.getTerrain();
 		
 		if (diagonal) {
-			if (currTerrain == '1' && nextTerrain == '1') {
+			if ((currTerrain == '1' || currTerrain == 'a') && nextTerrain == '1') {
 				return Math.sqrt(2);
-			} else if (currTerrain == '2' && nextTerrain == '2') {
+			} else if ((currTerrain == '1' || currTerrain == 'a') && nextTerrain == 'a') {
+				return Math.sqrt(2) / 4.0;
+			} else if ((currTerrain == 'b' ||currTerrain == '2') && nextTerrain == '2') {
 				return Math.sqrt(8);
+			} else if ((currTerrain == '2' || currTerrain == 'b') && nextTerrain == 'b') {
+				return Math.sqrt(8) / 4.0;
+			} else if ((currTerrain == '2' && nextTerrain == '1') || (currTerrain == '1' && nextTerrain == '2')){
+				return ((Math.sqrt(2) + Math.sqrt(8)) / 2.0);
 			} else {
-				return ((Math.sqrt(2) + Math.sqrt(8)) / 2);
+				return ((Math.sqrt(2) + Math.sqrt(8)) / 2.0) / 4.0;
 			}
 		} else {
-			if (currTerrain == '1' && nextTerrain == '1') {
-				return 1;
+			if ((currTerrain == '1' || currTerrain == 'a') && nextTerrain == '1') {
+				return 1.0;
 			} else if (currTerrain == '2' && nextTerrain == '2') {
-				return 2;
+				return 2.0;
 			} else if ((currTerrain == '2' && nextTerrain == '1') || (currTerrain == '1' && nextTerrain == '2')) {
 				return 1.5;
-			} else if (currTerrain == 'a' && nextTerrain == 'a') {
-				return 1/4;
-			} else if (currTerrain == 'b' && nextTerrain == 'b') {
-				return 2/4;
+			} else if ((currTerrain == 'a' || currTerrain == '1') && nextTerrain == 'a')  {
+				return 0.25;
+			} else if ((currTerrain == 'b' || currTerrain == '2') && nextTerrain == 'b') {
+				return 0.5;
 			} else {
 				return 1.5/4;
 			}
