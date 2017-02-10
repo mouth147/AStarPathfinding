@@ -43,8 +43,8 @@ public class Test {
 			}
 			System.out.println();
 		}
-		AStar a = new AStar(testTiles, new Coords(0, 0), new Coords(7, 9));
-		ArrayList<Node> path = a.solve(1.0, false, "Manhattan");
+		HeuristicSearch a = new AStar(testTiles, new Coords(0, 0), new Coords(7, 9), "Manhattan");
+		ArrayList<Node> path = a.solve();
 		for (Node curr : path) {
 			System.out.println(curr);
 		}

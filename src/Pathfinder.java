@@ -212,11 +212,12 @@ public class Pathfinder extends Application {
 		
 		MenuItem startAndGoal = new MenuItem("Generate start and goal tiles");
 		MenuItem solveAStar = new MenuItem("Find optimal path using A*");
+		MenuItem solveWeighted = new MenuItem("Find optimal path using Weighted A*");
 		MenuItem solveUniformCost = new MenuItem("Find optimal path using Uniform Cost");
 		MenuItem clearPath = new MenuItem("Clear path");
 		
 		fileMenu.getItems().addAll(exportMap, exit);
-		currentMenu.getItems().addAll(startAndGoal, solveAStar, solveUniformCost, clearPath);
+		currentMenu.getItems().addAll(startAndGoal, solveAStar, solveWeighted, solveUniformCost, clearPath);
 		if (path == null) {
 			clearPath.setDisable(true);
 		} else {
@@ -282,13 +283,51 @@ public class Pathfinder extends Application {
 
 					@Override
 					protected ArrayList<Node> call() throws Exception {
-						AStar astar = new AStar(mainMap.getTiles(), mainMap.getStartTile(), mainMap.getGoalTile());
+						HeuristicSearch astar = new AStar(mainMap.getTiles(), mainMap.getStartTile(), mainMap.getGoalTile(), heuristics.getValue());
 						long startTime = System.nanoTime();
-						ArrayList<Node> path = astar.solve(wSlider.getValue(), false, heuristics.getValue());
+						ArrayList<Node> path = astar.solve();
 						long endTime = System.nanoTime();
 						if (path != null) {
 							System.out.println("------------------------------------");
 							System.out.println("A* Search");
+							System.out.println("Heuristic: " + heuristics.getValue());
+							System.out.println("Runtime: " + ((endTime - startTime) / 1000000) + "ms");
+							System.out.println("Path length: " + path.size());
+							System.out.println("------------------------------------");
+						}
+
+						return path;
+					}
+					
+				};
+				
+				colorGrid(grid, mainMap.getTiles(), hValue, gValue, fValue, currTile);
+				colorPath(grid, task, hValue, gValue, fValue, currTile);
+				if (path != null) {
+					clearPath.setDisable(false);
+				}
+			}
+		});
+		
+		/*
+		 * Solve A star button
+		 */
+		solveWeighted.setOnAction(new EventHandler<ActionEvent>() {
+			
+			@Override
+			public void handle(ActionEvent event) {
+				
+				Task<ArrayList<Node>> task = new Task<ArrayList<Node>>() {
+
+					@Override
+					protected ArrayList<Node> call() throws Exception {
+						HeuristicSearch astar = new WeightedAStar(mainMap.getTiles(), mainMap.getStartTile(), mainMap.getGoalTile(), heuristics.getValue(), wSlider.getValue());
+						long startTime = System.nanoTime();
+						ArrayList<Node> path = astar.solve();
+						long endTime = System.nanoTime();
+						if (path != null) {
+							System.out.println("------------------------------------");
+							System.out.println("Weighted A* Search");
 							System.out.println("Heuristic: " + heuristics.getValue());
 							System.out.println("Weight: " + wSlider.getValue());
 							System.out.println("Runtime: " + ((endTime - startTime) / 1000000) + "ms");
@@ -321,14 +360,12 @@ public class Pathfinder extends Application {
 
 					@Override
 					protected ArrayList<Node> call() throws Exception {
-						AStar astar = new AStar(mainMap.getTiles(), mainMap.getStartTile(), mainMap.getGoalTile());
+						HeuristicSearch astar = new UniformCostSearch(mainMap.getTiles(), mainMap.getStartTile(), mainMap.getGoalTile());
 						long startTime = System.nanoTime();
-						ArrayList<Node> path = astar.solve(wSlider.getValue(), true, heuristics.getValue());
+						ArrayList<Node> path = astar.solve();
 						long endTime = System.nanoTime();
 						System.out.println("------------------------------------");
 						System.out.println("Uniform Cost Search");
-						System.out.println("Heuristic: " + heuristics.getValue());
-						System.out.println("Weight: " + wSlider.getValue());
 						System.out.println("Runtime: " + ((endTime - startTime) / 1000000) + "ms");
 						System.out.println("Path length: " + path.size());
 						System.out.println("------------------------------------");

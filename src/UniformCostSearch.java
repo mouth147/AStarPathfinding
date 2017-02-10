@@ -1,21 +1,16 @@
 import java.util.ArrayList;
 
-public class AStar extends HeuristicSearch {
-	
-	protected String heuristic;
+public class UniformCostSearch extends HeuristicSearch {
 
-	public AStar(Node[][] tiles, Coords start, Coords goal, String heuristic) {
-		super(tiles, start, goal);
-		this.heuristic = heuristic;
-	}
+	public UniformCostSearch(Node[][] tiles, Coords start, Coords goal) {
+		super(tiles, start, goal);	}
 	
 	public ArrayList<Node> solve() {
 
 		Node startNode = tiles[start.getY()][start.getX()];
 		Node current = null;
-		heuristicSwitch(heuristic, startNode);
 		startNode.setG(0);
-		startNode.setF(startNode.getG() + startNode.getH());
+		startNode.setF(0);
 		
 		openList.add(startNode);
 		
@@ -67,15 +62,14 @@ public class AStar extends HeuristicSearch {
 				
 				if (!openList.contains(neighbor) || tentativeGScore < neighbor.getG()) {
 					neighbor.setG(tentativeGScore);
-					heuristicSwitch(heuristic, neighbor);
-					neighbor.setF(neighbor.getG() + neighbor.getH());
+					neighbor.setF(neighbor.getG());
+
 					neighbor.setParent(current);
 					if (!openList.contains(neighbor)) openList.add(neighbor);
 				} 
 				
 				if (DEBUG) {
 					System.out.println("Neighbor coords: " + neighbor.getCoords());
-					System.out.println("H: " + neighbor.getH());
 					System.out.println("G: " + neighbor.getG());
 					System.out.println("F: " + neighbor.getF());
 				}

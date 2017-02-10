@@ -1,12 +1,14 @@
 import java.util.ArrayList;
 
-public class AStar extends HeuristicSearch {
-	
-	protected String heuristic;
+public class WeightedAStar extends HeuristicSearch {
 
-	public AStar(Node[][] tiles, Coords start, Coords goal, String heuristic) {
+	protected String heuristic;
+	protected double wValue;
+	
+	public WeightedAStar(Node[][] tiles, Coords start, Coords goal, String heuristic, double wValue) {
 		super(tiles, start, goal);
 		this.heuristic = heuristic;
+		this.wValue = wValue;
 	}
 	
 	public ArrayList<Node> solve() {
@@ -15,7 +17,7 @@ public class AStar extends HeuristicSearch {
 		Node current = null;
 		heuristicSwitch(heuristic, startNode);
 		startNode.setG(0);
-		startNode.setF(startNode.getG() + startNode.getH());
+		startNode.setF(startNode.getG() + (wValue * startNode.getH()));
 		
 		openList.add(startNode);
 		
@@ -68,7 +70,7 @@ public class AStar extends HeuristicSearch {
 				if (!openList.contains(neighbor) || tentativeGScore < neighbor.getG()) {
 					neighbor.setG(tentativeGScore);
 					heuristicSwitch(heuristic, neighbor);
-					neighbor.setF(neighbor.getG() + neighbor.getH());
+					neighbor.setF(neighbor.getG() + (wValue * neighbor.getH()));
 					neighbor.setParent(current);
 					if (!openList.contains(neighbor)) openList.add(neighbor);
 				} 
