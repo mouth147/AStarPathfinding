@@ -11,6 +11,8 @@ public abstract class HeuristicSearch {
 	protected NodeComparator fComparator = new NodeComparator();
 	protected PriorityQueue<Node> openList = new PriorityQueue<Node>(11, fComparator);
 	protected HashSet<Node> closedList = new HashSet<Node>();
+	protected double nodesExpanded;
+
 	
 	public HeuristicSearch(Node [][] tiles, Coords start, Coords goal) {
 		this.tiles = tiles;
@@ -224,4 +226,6 @@ public abstract class HeuristicSearch {
 		
 		
 	}
+
+
 }

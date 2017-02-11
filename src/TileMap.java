@@ -50,16 +50,16 @@ public class TileMap {
 	 */
 	public void generateMap() {
 
-		System.out.println("Generating map...");
-		System.out.println("Initializing map...");
+		//System.out.println("Generating map...");
+		//System.out.println("Initializing map...");
 		initialSetUp();
-		System.out.println("Generating centers of rough terrain...");
+		//System.out.println("Generating centers of rough terrain...");
 		generateCenters();
-		System.out.println("Developing tough terrain...");
+		//System.out.println("Developing tough terrain...");
 		developRoughTerrain();
-		System.out.println("Building highways...");
+		//System.out.println("Building highways...");
 		buildHighways();
-		System.out.println("God is making mountains...");
+		//System.out.println("God is making mountains...");
 		makeMountains();
 		
 	}
@@ -83,7 +83,7 @@ public class TileMap {
 	 * This method generates 8 centers for rough terrain
 	 * making sure there are no duplicates.
 	 */
-	public void generateCenters() {
+	private void generateCenters() {
 		
 		for (int i = 0; i < roughTerrainCenters.length; i++) {
 			Coords newCoords = generateCoords();
@@ -112,11 +112,13 @@ public class TileMap {
 	public void generateStartAndGoal() {
 		
 		clearStartAndGoal();
+		char terrain;
 		
 		Coords start;
 		do {
 			start = generateTileInRange();
-		} while (tiles[start.getY()][start.getX()].getTerrain() != '0');
+			terrain = tiles[start.getY()][start.getX()].getTerrain();
+		} while (terrain == '0');
 		
 		this.start = start;
 		Coords goal;
@@ -127,7 +129,8 @@ public class TileMap {
 			goal = generateTileInRange();
 			
 			success = compareRanges(start, goal);
-		} while (!success && tiles[goal.getY()][goal.getX()].getTerrain() != '0');
+			terrain = tiles[goal.getY()][goal.getX()].getTerrain();
+		} while (!success || terrain == '0');
 		this.goal = goal;
 		
 	}
@@ -140,23 +143,12 @@ public class TileMap {
 	 * @param goal - Possible goal tile for algorithm
 	 * @return Returns True if it's in the required range, false otherwise
 	 */
-	public boolean compareRanges(Coords start, Coords goal) {
+	private boolean compareRanges(Coords start, Coords goal) {
 		
-		int startX = start.getX(), goalX = goal.getX();
-		int startY = start.getY(), goalY = goal.getY();
-		int distance = 0;
-		
-		if (startX > goalX) {
-			distance += (startX - goalX);
-		} else {
-			distance += (goalX - startX);
-		}
-		
-		if (startY > goalY) {
-			distance += (startY - goalY);
-		} else {
-			distance += (goalY - startY);
-		}
+		int dx = Math.abs(start.getX() - goal.getX());
+		int dy = Math.abs(start.getY() - goal.getY());
+		int distance = dx + dy;
+
 		return distance >= 100;
 	}
 	
@@ -165,7 +157,7 @@ public class TileMap {
 	 * 
 	 * @return Returns a tile that'll be in one of four corners
 	 */
-	public Coords generateTileInRange() {
+	private Coords generateTileInRange() {
 		
 		Random r = new Random();
 		int x, lowX, highX;
@@ -312,7 +304,7 @@ public class TileMap {
 	 * This method goes around the center terrain and with a 50% probabilty
 	 * determines if each individual tile in the 31x31 area will be rough terrain.
 	 */
-	public void developRoughTerrain() {
+	private void developRoughTerrain() {
 		Coords current;
 		
 		for (int i = 0; i < roughTerrainCenters.length; i++) {
@@ -350,7 +342,7 @@ public class TileMap {
 	/**
 	 * Set all the cells to 1 - unblocked normal terrain.
 	 */
-	public void initialSetUp() {
+	private void initialSetUp() {
 		
 		for (int i = 0; i < NUM_COLS; i++) {
 			for (int j = 0; j < NUM_ROWS; j++) {
@@ -366,15 +358,12 @@ public class TileMap {
 	/**
 	 * Builds highways.
 	 */
-	public void buildHighways() {
+	private void buildHighways() {
 		
 		Coords[] highwayStartPoints = highwayStartCoords();
 		boolean isValid;
 		
 		for (int i = 0; i < 4; i++) {
-		if (i == 2 || i == 3) {
-			System.out.println("Almost there...");
-		}
 			isValid = highwayPathBuilder(i, highwayStartPoints[i]);
 			if (!isValid) {
 				deleteAllHighways();
@@ -388,7 +377,7 @@ public class TileMap {
 	/**
 	 * Goes through the map and replaces all highways with their original terrain.
 	 */
-	public void deleteAllHighways() {
+	private void deleteAllHighways() {
 		for (int i = 0; i < NUM_COLS; i++) {
 			for (int j = 0; j < NUM_ROWS; j++) {
 				if (tiles[j][i].getTerrain() == 'a') {
@@ -408,7 +397,7 @@ public class TileMap {
 	 * @param startPoint - starting coordinates of each highway
 	 * @return returns True if the highway was built successfully, False otherwise
 	 */
-	public boolean highwayPathBuilder(int section, Coords startPoint) {
+	private boolean highwayPathBuilder(int section, Coords startPoint) {
 		
 		ArrayList<Coords> highway = new ArrayList<Coords>(200);
 		int currentDirection = getStartingDirection(section);
@@ -470,7 +459,7 @@ public class TileMap {
 	 * 
 	 * @param highway - This is an ArrayList of the all the coords of the current highway.
 	 */
-	public void deleteSingleHighway(ArrayList<Coords> highway) {
+	private void deleteSingleHighway(ArrayList<Coords> highway) {
 		
 		Iterator<Coords> itr = highway.iterator();
 		int currX;
@@ -517,7 +506,7 @@ public class TileMap {
 	 * @param currTile - The current tile we're altering
 	 * @param currentDirection - The current direction we're traveling
 	 */
-	public Coords getNextTile(Coords currTile, int currentDirection) {
+	private Coords getNextTile(Coords currTile, int currentDirection) {
 		
 		Coords newTile = new Coords();
 		newTile.setX(currTile.getX());
@@ -540,7 +529,7 @@ public class TileMap {
 	 * to regenerate until it finds a new coordinate that isn't on a highway.
 	 * 
 	 */
-	public void makeMountains() {
+	private void makeMountains() {
 		int totalTiles = NUM_ROWS * NUM_COLS;
 		int totalMountains = totalTiles / 5;
 		Coords curr;
@@ -571,7 +560,7 @@ public class TileMap {
 	 * @param section - The section of the grid
 	 * @return Returns the direction of the map unless the section is invalid then returns -1
 	 */
-	public int getStartingDirection(int section) {
+	private int getStartingDirection(int section) {
 		
 		switch(section) {
 		case UP: return DOWN;
@@ -588,7 +577,7 @@ public class TileMap {
 	 * @param currDirection - the current direction of the highway
 	 * @return Returns the next direction
 	 */
-	public int getNextDirection(int currentDirection) {
+	private int getNextDirection(int currentDirection) {
 		
 		if (probability(60)) { // if true same direction
 			return currentDirection;
@@ -619,7 +608,7 @@ public class TileMap {
 	 * most right/bottom respectively to try and allow each highway to 
 	 * complete itself.
 	 */
-	public Coords[] highwayStartCoords() {
+	private Coords[] highwayStartCoords() {
 		
 		Coords[] highwayStartPoints = new Coords[4];
 		
