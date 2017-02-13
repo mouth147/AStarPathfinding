@@ -18,165 +18,119 @@ public class Test {
 		assertFalse("Shouldn't be equal", c1.equals(c2));
 		assertTrue("Should be equal", c1.equals(c3));
 		assertTrue("Should be equal", c2.equals(c4));
-		//assertTrue("Should fail", c1.equals(c2));
 		
-//		Node[][] testTiles = new Node[10][10];
-//		for (int i = 0; i < 10; i++) {
-//			for (int j = 0; j < 10; j++) {
-//				Node newNode = new Node();
-//				newNode.setCoords(new Coords(i, j));
-//				//System.out.println("Current x,y: " + i + "," + j + " | Coords: " + newNode.getCoords());
-//				testTiles[j][i] = newNode;
-//				newNode.setTerrain('1');
-//			}
-//		}
-//		for (int i = 1; i < 9; i++) {
-//			testTiles[0][i].setTerrain('a');
-//		}
-//		for (int i = 0; i < 7; i++) {
-//			testTiles[i][8].setTerrain('a');
-//		}
-//		testTiles[5][5].setTerrain('0');
-//		for (int y = 0; y < 10; y++) {
-//			for (int x = 0; x < 10; x++) {
-//				System.out.print(testTiles[y][x].getTerrain());
-//			}
-//			System.out.println();
-//		}
-//		HeuristicSearch a = new AStar(testTiles, new Coords(0, 0), new Coords(7, 9), "Manhattan");
-//		ArrayList<Node> path = a.solve();
-//		for (Node curr : path) {
-//			System.out.println(curr);
-//		}
-		TileMap map = new TileMap();
-		map.generateMap();
-		map.generateStartAndGoal();
+		phase2();
 		
-		HeuristicSearch astar = new SequentialAStar(map.getTiles(), map.getStartTile(), map.getGoalTile(), 2.0, 2.0);
-		astar.solve();
+	}
+
+	/**
+	 * 
+	 */
+	public void phase2() {
+		TileMap[] maps = generateMaps();
+		Coords[][][] coords = generateCoords(maps);
 		
-		
-		//benchmark();
+		for (int i = 0; i < 5; i++) {
+			
+			System.out.println("***********   Map " + (i + 1) + "   ***********");
+			System.out.println("A*");
+			System.out.println("--------------------");
+			benchmarkHeuristic(maps[i], coords[i], "Manhattan", 0, 0, "A*");
+			System.out.println("--------------------");
+			
+			System.out.println("Sequential A*");
+			System.out.println("---------------------");
+			benchmarkHeuristic(maps[i], coords[i], "Manhattan", 1.0, 1.0, "SA*");
+			System.out.println("---------------------");
+		}
 	}
 	
-	public void pError(TileMap map, String heuristics, double wValue) {
-		System.out.println("Start tile: " + map.getStartTile());
-		System.out.println("Goal tile: " + map.getGoalTile());
-		if (heuristics != null) System.out.println("Heuristic: " + heuristics);
-		if (wValue != 0) System.out.println("Weight value: " + wValue);
-	}
-	
-	public void benchmark() {
+	public void benchmarkHeuristic(TileMap map, Coords[][] coords, String heuristic, double w1, double w2, String algorithm) {
 		
-		TileMap map = new TileMap();
-		AStar search;
-		WeightedAStar wSearch;
-		UniformCostSearch uSearch;
-		map.generateMap();
-		double[] runtime = new double[16];
-		double[] pathLength = new double[16];
-		double[] nodesExpanded = new double[16];
-		String[] heuristics = {"Diagonal", "Manhattan", "Euclidean", "Enhanced Manhattan", "Fast Approximate"};
+		double pathLength = 0;
+		double nodesExpanded = 0;
+		double runtime = 0;
+		double startTime;
+		double endTime;
+		ArrayList<Node> path = new ArrayList<Node>();
+		
+		HeuristicSearch search = selectAlgorithm(algorithm, map, heuristic, w1, w2);
 		
 		for (int i = 0; i < 10; i++) {
-			map.generateStartAndGoal();
-			System.out.println("Current S&G: " + i);
+			search.start = coords[i][0];
+			search.goal = coords[i][1];
 			
-			for (int j = 0; j < 5; j++) {
-				search = new AStar(map.getTiles(), map.getStartTile(), map.getGoalTile(), heuristics[j]);
-				
-				long startTime = System.nanoTime();
-				ArrayList<Node> path = search.solve();
-				long endTime = System.nanoTime();
-				
-				runtime[j] += (endTime - startTime) / 1000000;
-				if (path != null) {
-					pathLength[j] += path.size();
-				} else {
-					pError(map, heuristics[j], 0);
-				}
-				nodesExpanded[j] += search.nodesExpanded;
-			}
+			search.resetMap();
 			
-			for (int j = 5; j < 10; j++) {
-				wSearch = new WeightedAStar(map.getTiles(), map.getStartTile(), map.getGoalTile(), heuristics[j % 5], 1.5);
-				
-				long startTime = System.nanoTime();
-				ArrayList<Node> path = wSearch.solve();
-				long endTime = System.nanoTime();
-				
-				runtime[j] += (endTime - startTime) / 1000000;
-				if (path != null) {
-					pathLength[j] += path.size();
-				} else {
-					pError(map, heuristics[j % 5], 1.5);
-				}
-				nodesExpanded[j] += wSearch.nodesExpanded;
-				
-				wSearch.setwValue(3.0);
-				startTime = System.nanoTime();
-				path = wSearch.solve();
-				endTime = System.nanoTime();
-				
-				runtime[j + 5] += (endTime - startTime) / 1000000;
-				if (path != null) {
-					pathLength[j + 5] += path.size();
-				} else {
-					pError(map, heuristics[j % 5], 3.0);
-				}
-				nodesExpanded[j + 5] += wSearch.nodesExpanded;
-			}
-			
-			uSearch = new UniformCostSearch(map.getTiles(), map.getStartTile(), map.getGoalTile());
-			
-			long startTime = System.nanoTime();
-			ArrayList<Node> path = uSearch.solve();
-			long endTime = System.nanoTime();
-			
-			runtime[15] += (endTime - startTime) / 1000000;
-			if (path != null) pathLength[15] += path.size();
-			nodesExpanded[15] += uSearch.nodesExpanded;
+			startTime = System.nanoTime();
+			path = search.solve();
+			endTime = System.nanoTime();
+
+			pathLength += path.size();
+			nodesExpanded += search.nodesExpanded;
+			runtime += ((endTime - startTime) / 1000000);
+
 		}
 		
-		System.out.println("Map Benchmarks");
-		System.out.println("--------------");
-		for (int i = 0; i < 16; i++) {
-			runtime[i] /= 10.0;
-			pathLength[i] /= 10.0;
-			nodesExpanded[i] /= 10.0;
-			
-		}
+		pathLength /= 10;
+		nodesExpanded /= 10;
+		runtime /= 10;
+
+		System.out.println("Avg Path Length: " + pathLength);
+		System.out.println("Avg Nodes Expanded: " + nodesExpanded);
+		System.out.println("Avg Runtime: " + runtime + " ms");
 		
-		System.out.println("A *");
+	}
+	
+	public TileMap[] generateMaps() {
+		
+		TileMap[] maps = new TileMap[5];
+		
 		for (int i = 0; i < 5; i++) {
-			System.out.println("---------------------------");
-			System.out.println("Heuristic: " + heuristics[i]);
-			System.out.println("Runtime: " + runtime[i]);
-			System.out.println("Path Length: " + pathLength[i]);
-			System.out.println("Nodes Expanded: " + nodesExpanded[i]);
+			maps[i] = new TileMap();
+			maps[i].generateMap();
 		}
 		
-		for (int i = 5; i < 10; i++) {
-			System.out.println("Weighted A* 1.5");
-			System.out.println("Heuristic: " + heuristics[i % 5]);
-			System.out.println("Runtime: " + runtime[i]);
-			System.out.println("Path Length: " + pathLength[i]);
-			System.out.println("Nodes Expanded: " + nodesExpanded[i]);
+		return maps;
+	}
+	
+	public Coords[][][] generateCoords(TileMap[] maps) {
+		
+		Coords[][][] startAndGoals = new Coords[5][10][2];
+		
+		for (int map = 0; map < 5; map++) {
+			for (int coords = 0; coords < 10; coords++) {
+					maps[map].generateStartAndGoal();
+					startAndGoals[map][coords][0] = maps[map].getStartTile();
+					startAndGoals[map][coords][1] = maps[map].getGoalTile();
+			}
 		}
 		
-		for (int i = 10; i < 15; i++) {
-			System.out.println("Weighted A* 3.0");
-			System.out.println("Heuristic: " + heuristics[i % 5]);
-			System.out.println("Runtime: " + runtime[i]);
-			System.out.println("Path Length: " + pathLength[i]);
-			System.out.println("Nodes Expanded: " + nodesExpanded[i]);
+		return startAndGoals;
+	}
+	
+	public HeuristicSearch selectAlgorithm(String algorithm, TileMap map, String heuristic, double w1, double w2) {
+		
+		switch(algorithm) {
+		
+		case "A*":
+			return new AStar(map.getTiles(), map.getStartTile(), map.getGoalTile(), heuristic);
+
+		case "WA*":
+			return new WeightedAStar(map.getTiles(), map.getStartTile(), map.getGoalTile(), heuristic, w1);
+			
+		case "UCS":
+			return new UniformCostSearch(map.getTiles(), map.getStartTile(), map.getGoalTile());
+			
+		case "SA*":
+			return new SequentialAStar(map.getTiles(), map.getStartTile(), map.getGoalTile(), w1, w2);
+			
+		default:
+			break;
+		
 		}
 		
-		System.out.println("Uniform Cost Search");
-		System.out.println("Runtime: " + runtime[15]);
-		System.out.println("Path Length: " + pathLength[15]);
-		System.out.println("Nodes Expanded: " + nodesExpanded[15]);
-		
+		return null;
 	}
 
 }

@@ -83,6 +83,7 @@ public abstract class HeuristicSearch {
 	}
 	
 	public void getNeighbors(Node current) {
+
 		Coords coords = current.getCoords();
 
 		int maxX = (coords.getX() - 1) + 3;
@@ -225,6 +226,20 @@ public abstract class HeuristicSearch {
 		}
 		
 		
+	}
+	
+	public void resetMap() {
+		openList.clear();
+		closedList.clear();
+		
+		for (int i = 0; i < tiles.length; i++) {
+			for (int j = 0; j < tiles[i].length; j++) {
+				tiles[i][j].setF(0);
+				tiles[i][j].setG(0);
+				tiles[i][j].setH(0);
+				tiles[i][j].setParent(null);
+			}
+		}
 	}
 
 

@@ -86,7 +86,6 @@ public class AStar extends HeuristicSearch {
 		}
 		
 		System.out.println("Path not found");
-		System.out.println("Nodes expanded: " + closedList.size());
 		nodesExpanded = closedList.size();
 		return null;
 		

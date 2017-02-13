@@ -135,8 +135,10 @@ public class Pathfinder extends Application {
 		ChoiceBox<String> heuristics = new ChoiceBox<String>();
 		heuristics.getItems().addAll("Diagonal", "Manhattan", "Euclidean", "Enhanced Manhattan", "Fast Approximate");
 		heuristics.getSelectionModel().selectFirst();
-		Label wValue = new Label("W Value: ");
-		Slider wSlider = new Slider();
+		Label wValue1 = new Label("W1 Value: ");
+		Slider wSlider1 = new Slider();
+		Label wValue2 = new Label("W2 Value: ");
+		Slider wSlider2 = new Slider();
 		Label hValue = new Label("H Value: ");
 		Label currTile = new Label("Current Tile: ");
 		Label gValue = new Label("G Value: ");
@@ -166,6 +168,27 @@ public class Pathfinder extends Application {
 		startTiles.getChildren().addAll(start, startValue);
 		goalTiles.getChildren().addAll(goal, goalValue);
 		
+		setSlider(wSlider1, wValue1);
+		setSlider(wSlider2, wValue2);
+		
+		vbox.getChildren().addAll(hLabel, heuristics, wValue1, wSlider1, wValue2, wSlider2, hValue, gValue, fValue, startTiles, goalTiles, currTile);
+		MenuBar menuBar = createMenu(primaryStage, mainMap, startValue, goalValue, grid, hValue, gValue, fValue, currTile, wSlider1, wSlider2, heuristics);
+		
+		colorGrid(grid, tiles, hValue, gValue, fValue, currTile);
+		root.setTop(menuBar);
+		root.setCenter(grid);
+		root.setRight(vbox);
+		
+		Scene scene = new Scene(root, MAP_WIDTH, MAP_HEIGHT);
+		primaryStage.setTitle("Map");
+		primaryStage.setScene(scene);
+		primaryStage.show();
+	}
+
+	/**
+	 * 
+	 */
+	public void setSlider(Slider wSlider, Label wValue) {
 		wSlider.setMin(1);
 		wSlider.setMax(4);
 		wSlider.setValue(1);
@@ -180,19 +203,6 @@ public class Pathfinder extends Application {
 				wValue.setText("W Value: " + decFormat.format(wSlider.getValue()));
 			}
 		});
-		
-		vbox.getChildren().addAll(hLabel, heuristics, wValue, wSlider, hValue, gValue, fValue, startTiles, goalTiles, currTile);
-		MenuBar menuBar = createMenu(primaryStage, mainMap, startValue, goalValue, grid, hValue, gValue, fValue, currTile, wSlider, heuristics);
-		
-		colorGrid(grid, tiles, hValue, gValue, fValue, currTile);
-		root.setTop(menuBar);
-		root.setCenter(grid);
-		root.setRight(vbox);
-		
-		Scene scene = new Scene(root, MAP_WIDTH, MAP_HEIGHT);
-		primaryStage.setTitle("Map");
-		primaryStage.setScene(scene);
-		primaryStage.show();
 	}
 
 	/**
@@ -200,7 +210,7 @@ public class Pathfinder extends Application {
 	 * 
 	 * @return Returns a MenuBar object ready to go.
 	 */
-	public MenuBar createMenu(Stage primaryStage, TileMap mainMap, Label startValue, Label goalValue, GridPane grid, Label hValue, Label gValue, Label fValue, Label currTile, Slider wSlider, ChoiceBox<String> heuristics) {
+	public MenuBar createMenu(Stage primaryStage, TileMap mainMap, Label startValue, Label goalValue, GridPane grid, Label hValue, Label gValue, Label fValue, Label currTile, Slider wSlider1, Slider wSlider2, ChoiceBox<String> heuristics) {
 		MenuBar menuBar = new MenuBar();
 		
 		Menu fileMenu = new Menu("File");
@@ -254,7 +264,9 @@ public class Pathfinder extends Application {
 				mainMap.generateStartAndGoal();
 				if (path != null) {
 					colorGrid(grid, mainMap.getTiles(), hValue, gValue, fValue, currTile);
+					clearPath.setDisable(true);
 				}
+				path = null;
 				startValue.setText(mainMap.getStartTile().toString());
 				goalValue.setText(mainMap.getGoalTile().toString());
 			}
@@ -285,6 +297,7 @@ public class Pathfinder extends Application {
 					@Override
 					protected ArrayList<Node> call() throws Exception {
 						HeuristicSearch astar = new AStar(mainMap.getTiles(), mainMap.getStartTile(), mainMap.getGoalTile(), heuristics.getValue());
+						astar.resetMap();
 						long startTime = System.nanoTime();
 						ArrayList<Node> path = astar.solve();
 						long endTime = System.nanoTime();
@@ -303,10 +316,7 @@ public class Pathfinder extends Application {
 				};
 				
 				colorGrid(grid, mainMap.getTiles(), hValue, gValue, fValue, currTile);
-				colorPath(grid, task, hValue, gValue, fValue, currTile);
-				if (path != null) {
-					clearPath.setDisable(false);
-				}
+				colorPath(grid, task, hValue, gValue, fValue, currTile, clearPath);
 			}
 		});
 		
@@ -322,7 +332,8 @@ public class Pathfinder extends Application {
 
 					@Override
 					protected ArrayList<Node> call() throws Exception {
-						HeuristicSearch astar = new SequentialAStar(mainMap.getTiles(), mainMap.getStartTile(), mainMap.getGoalTile(), 2.00, 2.00);
+						HeuristicSearch astar = new SequentialAStar(mainMap.getTiles(), mainMap.getStartTile(), mainMap.getGoalTile(), wSlider1.getValue(), wSlider2.getValue());
+						astar.resetMap();
 						long startTime = System.nanoTime();
 						ArrayList<Node> path = astar.solve();
 						long endTime = System.nanoTime();
@@ -341,10 +352,7 @@ public class Pathfinder extends Application {
 				};
 				
 				colorGrid(grid, mainMap.getTiles(), hValue, gValue, fValue, currTile);
-				colorPath(grid, task, hValue, gValue, fValue, currTile);
-				if (path != null) {
-					clearPath.setDisable(false);
-				}
+				colorPath(grid, task, hValue, gValue, fValue, currTile, clearPath);
 			}
 		});
 		
@@ -360,7 +368,8 @@ public class Pathfinder extends Application {
 
 					@Override
 					protected ArrayList<Node> call() throws Exception {
-						HeuristicSearch astar = new WeightedAStar(mainMap.getTiles(), mainMap.getStartTile(), mainMap.getGoalTile(), heuristics.getValue(), wSlider.getValue());
+						HeuristicSearch astar = new WeightedAStar(mainMap.getTiles(), mainMap.getStartTile(), mainMap.getGoalTile(), heuristics.getValue(), wSlider1.getValue());
+						astar.resetMap();
 						long startTime = System.nanoTime();
 						ArrayList<Node> path = astar.solve();
 						long endTime = System.nanoTime();
@@ -368,7 +377,7 @@ public class Pathfinder extends Application {
 							System.out.println("------------------------------------");
 							System.out.println("Weighted A* Search");
 							System.out.println("Heuristic: " + heuristics.getValue());
-							System.out.println("Weight: " + wSlider.getValue());
+							System.out.println("Weight: " + wSlider1.getValue());
 							System.out.println("Runtime: " + ((endTime - startTime) / 1000000) + "ms");
 							System.out.println("Path length: " + path.size());
 							System.out.println("------------------------------------");
@@ -380,10 +389,7 @@ public class Pathfinder extends Application {
 				};
 				
 				colorGrid(grid, mainMap.getTiles(), hValue, gValue, fValue, currTile);
-				colorPath(grid, task, hValue, gValue, fValue, currTile);
-				if (path != null) {
-					clearPath.setDisable(false);
-				}
+				colorPath(grid, task, hValue, gValue, fValue, currTile, clearPath);
 			}
 		});
 		
@@ -400,6 +406,7 @@ public class Pathfinder extends Application {
 					@Override
 					protected ArrayList<Node> call() throws Exception {
 						HeuristicSearch astar = new UniformCostSearch(mainMap.getTiles(), mainMap.getStartTile(), mainMap.getGoalTile());
+						astar.resetMap();
 						long startTime = System.nanoTime();
 						ArrayList<Node> path = astar.solve();
 						long endTime = System.nanoTime();
@@ -415,10 +422,7 @@ public class Pathfinder extends Application {
 				};
 				
 				colorGrid(grid, mainMap.getTiles(), hValue, gValue, fValue, currTile);
-				colorPath(grid, task, hValue, gValue, fValue, currTile);
-				if (path != null) {
-					clearPath.setDisable(false);
-				}
+				colorPath(grid, task, hValue, gValue, fValue, currTile, clearPath);
 			}
 		});
 		
@@ -465,6 +469,7 @@ public class Pathfinder extends Application {
 				curr.setF(0);
 				curr.setG(0);
 				curr.setH(0);
+				curr.setParent(null);
 				Rectangle rec = new Rectangle();
 				rec.setHeight(REC_HEIGHT);
 				rec.setWidth(REC_WIDTH);
@@ -545,7 +550,7 @@ public class Pathfinder extends Application {
 	 * @param grid
 	 * @param task
 	 */
-	public void colorPath(GridPane grid, Task<ArrayList<Node>> task, Label hValue, Label gValue, Label fValue, Label currTile) {
+	public void colorPath(GridPane grid, Task<ArrayList<Node>> task, Label hValue, Label gValue, Label fValue, Label currTile, MenuItem clearPath) {
 		Thread th = new Thread(task);
 		th.setDaemon(true);
 		th.start();
@@ -580,6 +585,7 @@ public class Pathfinder extends Application {
 					});
 					
 				}
+				clearPath.setDisable(false);
 			}
 		});
 	}

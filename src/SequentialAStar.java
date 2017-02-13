@@ -27,6 +27,7 @@ public class SequentialAStar extends HeuristicSearch {
 		this.w2 = w2;
 	}
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
 	public ArrayList<Node> solve() {
 		Node startNode = tiles[start.getY()][start.getX()];
@@ -51,18 +52,17 @@ public class SequentialAStar extends HeuristicSearch {
 			
 		}
 		
-		double anchorMinKey = fValues[0].get(open[0].peek());
-		
-		while (anchorMinKey < Double.POSITIVE_INFINITY) {
+		while (fValues[0].get(open[0].peek()) < Double.POSITIVE_INFINITY) {
 			
 			for (int currHeuristic = 1; currHeuristic < numOfHeuristics; currHeuristic++) {
 				
 				double inadMinKey = fValues[currHeuristic].get(open[currHeuristic].peek());
 				
-				if (inadMinKey <= w2 * anchorMinKey) {
+				if (inadMinKey <= w2 * fValues[0].get(open[0].peek())) {
 					if (gValues[currHeuristic].get(goalNode) <= inadMinKey) {
 						if (gValues[currHeuristic].get(goalNode) < Double.POSITIVE_INFINITY) {
-							System.out.println("Path found!");
+							//System.out.println("Path found!");
+							nodesExpanded = closed[currHeuristic].size();
 							return returnPath(goalNode, currHeuristic);
 						}	
 					} else {
@@ -71,9 +71,10 @@ public class SequentialAStar extends HeuristicSearch {
 						closed[currHeuristic].add(currentNode);
 					}
 				} else { // if inadMinKey < w2 * anchorMinKey
-					if (gValues[0].get(goalNode) <= anchorMinKey) {
+					if (gValues[0].get(goalNode) <= fValues[0].get(open[0].peek())) {
 						if (gValues[0].get(goalNode) < Double.POSITIVE_INFINITY) {
-							System.out.println("Path found!");
+							//System.out.println("Path found!");
+							nodesExpanded = closed[currHeuristic].size();
 							return returnPath(goalNode, 0);
 						}
 					} else {
@@ -98,10 +99,6 @@ public class SequentialAStar extends HeuristicSearch {
 		while (tmp != null) {
 			path.add(0, tmp);
 			tmp = parentPointers[currHeuristic].get(tmp);
-			
-			System.out.println(tmp);
-			System.out.println(start);
-			System.out.println(goal);
 		}
 		
 		return path;
@@ -123,7 +120,7 @@ public class SequentialAStar extends HeuristicSearch {
 				continue;
 			}
 			
-			if (!open[currHeuristic].contains(neighbor)) {
+			if (!open[currHeuristic].contains(neighbor) && !closed[currHeuristic].contains(neighbor)) {
 				gValues[currHeuristic].put(neighbor, Double.POSITIVE_INFINITY);
 				parentPointers[currHeuristic].put(neighbor, null);
 			}
@@ -132,6 +129,7 @@ public class SequentialAStar extends HeuristicSearch {
 			
 			if (gValues[currHeuristic].get(neighbor) > tentativeGScore ) {
 				
+				//System.out.println(neighbor.getCoords() + ": " + gValues[currHeuristic].get(neighbor));
 				gValues[currHeuristic].replace(neighbor, tentativeGScore);
 				parentPointers[currHeuristic].replace(neighbor, currentNode);
 				
