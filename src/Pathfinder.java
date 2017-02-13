@@ -225,10 +225,11 @@ public class Pathfinder extends Application {
 		MenuItem solveWeighted = new MenuItem("Find optimal path using Weighted A*");
 		MenuItem solveUniformCost = new MenuItem("Find optimal path using Uniform Cost");
 		MenuItem solveSequential = new MenuItem("Find optimal path using Sequential A*");
+		MenuItem solveIntegrated = new MenuItem("Find optimal path using Integrated A*");
 		MenuItem clearPath = new MenuItem("Clear path");
 		
 		fileMenu.getItems().addAll(exportMap, exit);
-		currentMenu.getItems().addAll(startAndGoal, solveAStar, solveWeighted, solveUniformCost, solveSequential, clearPath);
+		currentMenu.getItems().addAll(startAndGoal, solveAStar, solveWeighted, solveUniformCost, solveSequential, solveIntegrated, clearPath);
 		if (path == null) {
 			clearPath.setDisable(true);
 		} else {
@@ -340,6 +341,42 @@ public class Pathfinder extends Application {
 						if (path != null) {
 							System.out.println("------------------------------------");
 							System.out.println("Sequential A* Search");
+							System.out.println("Heuristic: " + heuristics.getValue());
+							System.out.println("Runtime: " + ((endTime - startTime) / 1000000) + "ms");
+							System.out.println("Path length: " + path.size());
+							System.out.println("------------------------------------");
+						}
+
+						return path;
+					}
+					
+				};
+				
+				colorGrid(grid, mainMap.getTiles(), hValue, gValue, fValue, currTile);
+				colorPath(grid, task, hValue, gValue, fValue, currTile, clearPath);
+			}
+		});
+		
+		/*
+		 * Solve Integrated A star button
+		 */
+		solveIntegrated.setOnAction(new EventHandler<ActionEvent>() {
+			
+			@Override
+			public void handle(ActionEvent event) {
+				
+				Task<ArrayList<Node>> task = new Task<ArrayList<Node>>() {
+
+					@Override
+					protected ArrayList<Node> call() throws Exception {
+						HeuristicSearch astar = new SequentialAStar(mainMap.getTiles(), mainMap.getStartTile(), mainMap.getGoalTile(), wSlider1.getValue(), wSlider2.getValue());
+						astar.resetMap();
+						long startTime = System.nanoTime();
+						ArrayList<Node> path = astar.solve();
+						long endTime = System.nanoTime();
+						if (path != null) {
+							System.out.println("------------------------------------");
+							System.out.println("Integrated A* Search");
 							System.out.println("Heuristic: " + heuristics.getValue());
 							System.out.println("Runtime: " + ((endTime - startTime) / 1000000) + "ms");
 							System.out.println("Path length: " + path.size());

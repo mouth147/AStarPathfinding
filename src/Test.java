@@ -40,7 +40,12 @@ public class Test {
 			
 			System.out.println("Sequential A*");
 			System.out.println("---------------------");
-			benchmarkHeuristic(maps[i], coords[i], "Manhattan", 1.0, 1.0, "SA*");
+			benchmarkHeuristic(maps[i], coords[i], "Manhattan", 1.50, 3.0, "SA*");
+			System.out.println("---------------------");
+			
+			System.out.println("Integrated A*");
+			System.out.println("---------------------");
+			benchmarkHeuristic(maps[i], coords[i], "Manhattan", 1.50, 3.0, "IA*");
 			System.out.println("---------------------");
 		}
 	}
@@ -57,6 +62,7 @@ public class Test {
 		HeuristicSearch search = selectAlgorithm(algorithm, map, heuristic, w1, w2);
 		
 		for (int i = 0; i < 10; i++) {
+
 			search.start = coords[i][0];
 			search.goal = coords[i][1];
 			
@@ -124,6 +130,9 @@ public class Test {
 			
 		case "SA*":
 			return new SequentialAStar(map.getTiles(), map.getStartTile(), map.getGoalTile(), w1, w2);
+			
+		case "IA*":
+			return new IntegratedAStar(map.getTiles(), map.getStartTile(), map.getGoalTile(), w1, w2);
 			
 		default:
 			break;
