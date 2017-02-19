@@ -409,19 +409,17 @@ public class TileMap {
 		
 		while (numOfAttempts < 10000) {
 			currTile = startPoint;
-			highway.add(currTile);
 			currX = currTile.getX();
 			currY = currTile.getY();
 			successfulTile = true;
+			currentDirection = getStartingDirection(section);
 			numOfAttempts++;
 			
 			while ((currX >= 0 && currX < NUM_COLS) && (currY >= 0 && currY < NUM_ROWS) && successfulTile) { // while inside the grid
 				highway.add(currTile);
-				if (tiles[currY][currX].getTerrain() == 'a' || tiles[currY][currX].getTerrain() == 'b') {
+				if (tiles[currY][currX].getTerrain() == 'a' || tiles[currY][currX].getTerrain() == 'b' || onBorder(currTile, currentDirection) || hasHighwayNeighbor(currTile, highway)) {
 					highway.remove(currTile);
 					deleteSingleHighway(highway);
-					currX = startPoint.getX();
-					currY = startPoint.getY();
 					successfulTile = false;
 				} else if (tiles[currY][currX].getTerrain() == '1') {
 					count++;
@@ -448,6 +446,65 @@ public class TileMap {
 				return true;
 			} else {
 				deleteSingleHighway(highway);
+			}
+		}
+		
+		return false;
+	}
+
+	/**
+	 * Sees if there is a neighboring highway.
+	 * 
+	 * @param currTile - The current tile we're on
+	 * @param highway - The current highway with all of the coords comprised of this highway
+	 * @return True if there is a neighboring highway, False otherwise
+	 */
+	boolean hasHighwayNeighbor(Coords currTile, ArrayList<Coords> highway) {
+		
+		int currX = currTile.getX();
+		int currY = currTile.getY();
+		
+		for (currY -= 1; currY < currTile.getY() + 2; currY++) {
+			if (currY < 0 || currY >= NUM_ROWS) {
+				continue;
+			}
+			for (currX -= 1; currX < currTile.getX() + 2; currX++) {
+				if (currX < 0 || currX >= NUM_COLS) {
+					continue;
+				}
+				
+				if ((tiles[currY][currX].getTerrain() == 'a' || tiles[currY][currX].getTerrain() == 'b') & !highway.contains(tiles[currY][currX].getCoords())) {
+					return true;
+				}
+				
+			}
+		}
+		
+		return false;
+	}
+	
+	/**
+	 * Determines if the path is running along a border or not.
+	 * 
+	 * @param currTile - the current tile
+	 * @param currDirection - the current direction
+	 * 
+	 * @return True if it's running on border, False otherwise
+	 */
+	boolean onBorder(Coords currTile, int currDirection) {
+		
+		int currX = currTile.getX();
+		int currY = currTile.getY();
+		
+		if (currY == 0 || currY == NUM_ROWS) {
+			if (currDirection == LEFT || currDirection == RIGHT) {
+				return true;
+			}
+		}
+		
+		if (currX == 0 || currX == NUM_COLS) {
+			if (currDirection == UP || currDirection == DOWN) {
+				return true;
 			}
 		}
 		
@@ -617,9 +674,32 @@ public class TileMap {
 		}
 		
 		highwayStartPoints[UP].setY(0);
+		if (highwayStartPoints[UP].getX() == 0) {
+			highwayStartPoints[UP].setX(highwayStartPoints[UP].getX() + 25);
+		} else if (highwayStartPoints[UP].getX() == NUM_COLS) {
+			highwayStartPoints[UP].setX(highwayStartPoints[UP].getX() - 10);
+		}
+		
 		highwayStartPoints[LEFT].setX(0);
+		if (highwayStartPoints[LEFT].getY() == 0) {
+			highwayStartPoints[LEFT].setY(highwayStartPoints[LEFT].getY() + 25);
+		} else if (highwayStartPoints[LEFT].getY() == NUM_ROWS) {
+			highwayStartPoints[LEFT].setY(highwayStartPoints[LEFT].getY() - 10);
+		}
+		
 		highwayStartPoints[RIGHT].setX(NUM_COLS - 1);
+		if (highwayStartPoints[RIGHT].getY() == 0) {
+			highwayStartPoints[RIGHT].setY(highwayStartPoints[RIGHT].getY() + 25);
+		} else if (highwayStartPoints[RIGHT].getX() == NUM_COLS) {
+			highwayStartPoints[RIGHT].setY(highwayStartPoints[RIGHT].getY() - 10);
+		}
+		
 		highwayStartPoints[DOWN].setY(NUM_ROWS - 1);
+		if (highwayStartPoints[DOWN].getX() == 0) {
+			highwayStartPoints[DOWN].setX(highwayStartPoints[DOWN].getX() + 25);
+		} else if (highwayStartPoints[DOWN].getX() == NUM_COLS) {
+			highwayStartPoints[DOWN].setX(highwayStartPoints[DOWN].getX() - 10);
+		}
 		
 		return highwayStartPoints;
 	}

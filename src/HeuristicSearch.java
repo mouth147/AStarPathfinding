@@ -11,6 +11,7 @@ public abstract class HeuristicSearch {
 	protected NodeComparator fComparator = new NodeComparator();
 	protected PriorityQueue<Node> openList = new PriorityQueue<Node>(11, fComparator);
 	protected HashSet<Node> closedList = new HashSet<Node>();
+	protected double nodesOpened;
 	protected double nodesExpanded;
 
 	
@@ -141,13 +142,13 @@ public abstract class HeuristicSearch {
 	
 	public double enhancedManhattan(Node next) {
 		
-		double dx, dy, minPathLength = 100, avgDiagonal = ((Math.sqrt(2) + Math.sqrt(8)) / 2), avgNon = 1.5;
+		double dx, dy, minPathLength = 100;
 		Coords coords = next.getCoords();
 		
 		dx = Math.abs(coords.getX() - goal.getX());
 		dy = Math.abs(coords.getY() - goal.getY());
 		
-		return ((avgNon * (dx + dy)) + (avgDiagonal * Math.sqrt(dx * dx + dy * dy))) / minPathLength;
+		return ((dx + dy) + Math.sqrt(dx * dx + dy * dy)) / minPathLength;
 	}
 	
 	public double euclideanDistance(Node next) {

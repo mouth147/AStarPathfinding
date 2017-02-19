@@ -45,6 +45,7 @@ public class UniformCostSearch extends HeuristicSearch {
 			if (current.getCoords().equals(goal)) {
 				//System.out.println("Path found!");
 				//System.out.println("Nodes expanded: " + closedList.size());
+				nodesExpanded = closedList.size();
 				return optimalPath(current);
 			}
 			
@@ -65,7 +66,10 @@ public class UniformCostSearch extends HeuristicSearch {
 					neighbor.setF(neighbor.getG());
 
 					neighbor.setParent(current);
-					if (!openList.contains(neighbor)) openList.add(neighbor);
+					if (!openList.contains(neighbor)) {
+						nodesOpened++;
+						openList.add(neighbor);
+					}
 				} 
 				
 				if (DEBUG) {
@@ -80,6 +84,7 @@ public class UniformCostSearch extends HeuristicSearch {
 		
 		System.out.println("Path not found");
 		System.out.println("Nodes expanded: " + closedList.size());
+		nodesExpanded = closedList.size();
 		return null;
 		
 	}

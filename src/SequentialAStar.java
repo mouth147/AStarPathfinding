@@ -49,6 +49,7 @@ public class SequentialAStar extends HeuristicSearch {
 			startNode.setF(key(startNode, currHeuristic));
 			fValues[currHeuristic].put(startNode, startNode.getF());
 			open[currHeuristic].add(startNode);
+			nodesOpened++;
 			
 		}
 		
@@ -69,6 +70,7 @@ public class SequentialAStar extends HeuristicSearch {
 						Node currentNode = open[currHeuristic].poll();
 						expandState(currentNode, currHeuristic);
 						closed[currHeuristic].add(currentNode);
+						nodesOpened++;
 					}
 				} else { // if inadMinKey < w2 * anchorMinKey
 					if (gValues[0].get(goalNode) <= fValues[0].get(open[0].peek())) {
@@ -81,6 +83,7 @@ public class SequentialAStar extends HeuristicSearch {
 						Node currentNode = open[0].poll();
 						expandState(currentNode, 0);
 						closed[0].add(currentNode);
+						nodesOpened++;
 					}
 				}
 			}
@@ -138,6 +141,7 @@ public class SequentialAStar extends HeuristicSearch {
 					fValues[currHeuristic].put(neighbor, neighbor.getF());
 					if (!open[currHeuristic].contains(neighbor)) {
 						open[currHeuristic].add(neighbor);
+						nodesOpened++;
 					} else if (open[currHeuristic].peek().equals(neighbor)) {
 						open[currHeuristic].remove();
 						open[currHeuristic].add(neighbor);

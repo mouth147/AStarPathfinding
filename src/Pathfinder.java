@@ -308,6 +308,7 @@ public class Pathfinder extends Application {
 							System.out.println("Heuristic: " + heuristics.getValue());
 							System.out.println("Runtime: " + ((endTime - startTime) / 1000000) + "ms");
 							System.out.println("Path length: " + path.size());
+							System.out.println("Memory used: " + (astar.nodesOpened * 56));
 							System.out.println("------------------------------------");
 						}
 
@@ -344,6 +345,7 @@ public class Pathfinder extends Application {
 							System.out.println("Heuristic: " + heuristics.getValue());
 							System.out.println("Runtime: " + ((endTime - startTime) / 1000000) + "ms");
 							System.out.println("Path length: " + path.size());
+							System.out.println("Memory used: " + (astar.nodesOpened * 56));
 							System.out.println("------------------------------------");
 						}
 
@@ -380,6 +382,7 @@ public class Pathfinder extends Application {
 							System.out.println("Heuristic: " + heuristics.getValue());
 							System.out.println("Runtime: " + ((endTime - startTime) / 1000000) + "ms");
 							System.out.println("Path length: " + path.size());
+							System.out.println("Memory used: " + (astar.nodesOpened * 56));
 							System.out.println("------------------------------------");
 						}
 
@@ -417,6 +420,7 @@ public class Pathfinder extends Application {
 							System.out.println("Weight: " + wSlider1.getValue());
 							System.out.println("Runtime: " + ((endTime - startTime) / 1000000) + "ms");
 							System.out.println("Path length: " + path.size());
+							System.out.println("Memory used: " + (astar.nodesOpened * 56));
 							System.out.println("------------------------------------");
 						}
 
@@ -451,6 +455,7 @@ public class Pathfinder extends Application {
 						System.out.println("Uniform Cost Search");
 						System.out.println("Runtime: " + ((endTime - startTime) / 1000000) + "ms");
 						System.out.println("Path length: " + path.size());
+						System.out.println("Memory used: " + (astar.nodesOpened * 56));
 						System.out.println("------------------------------------");
 
 						return path;

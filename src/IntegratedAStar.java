@@ -47,6 +47,7 @@ public class IntegratedAStar extends HeuristicSearch {
 			startNode.setF(key(startNode, currHeuristic));
 			fValues[currHeuristic].put(startNode, startNode.getF());
 			open[currHeuristic].add(startNode);
+			nodesOpened++;
 			
 		}
 		
@@ -68,6 +69,7 @@ public class IntegratedAStar extends HeuristicSearch {
 						Node currentNode = open[currHeuristic].poll();
 						expandState(currentNode);
 						closedINAD.add(currentNode);
+						nodesOpened++;
 					}
 				} else { // if inadMinKey < w2 * anchorMinKey
 					if (gValues.get(goalNode) <= fValues[0].get(open[0].peek())) {
@@ -80,6 +82,7 @@ public class IntegratedAStar extends HeuristicSearch {
 						Node currentNode = open[0].poll();
 						expandState(currentNode);
 						closedANCHOR.add(currentNode);
+						nodesOpened++;
 					}
 				}
 			}
@@ -147,6 +150,7 @@ public class IntegratedAStar extends HeuristicSearch {
 								neighbor.setF(key(neighbor, heuristic));
 								fValues[heuristic].put(neighbor, neighbor.getF());
 								open[heuristic].add(neighbor);
+								nodesOpened++;
 							}
 						}
 					} 

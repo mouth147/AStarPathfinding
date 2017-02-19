@@ -71,7 +71,10 @@ public class AStar extends HeuristicSearch {
 					heuristicSwitch(heuristic, neighbor);
 					neighbor.setF(neighbor.getG() + neighbor.getH());
 					neighbor.setParent(current);
-					if (!openList.contains(neighbor)) openList.add(neighbor);
+					if (!openList.contains(neighbor)) {
+						nodesOpened++;
+						openList.add(neighbor);
+					}
 				} 
 				
 				if (DEBUG) {
