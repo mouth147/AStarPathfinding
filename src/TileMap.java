@@ -421,6 +421,7 @@ public class TileMap {
 					highway.remove(currTile);
 					deleteSingleHighway(highway);
 					successfulTile = false;
+					count = 0;
 				} else if (tiles[currY][currX].getTerrain() == '1') {
 					count++;
 					tiles[currY][currX].setTerrain('a');
@@ -496,13 +497,15 @@ public class TileMap {
 		int currX = currTile.getX();
 		int currY = currTile.getY();
 		
-		if (currY == 0 || currY == NUM_ROWS) {
+		if (currY == 0 || currY == NUM_ROWS - 1) {
+
 			if (currDirection == LEFT || currDirection == RIGHT) {
 				return true;
 			}
 		}
 		
-		if (currX == 0 || currX == NUM_COLS) {
+		if (currX == 0 || currX == NUM_COLS - 1) {
+
 			if (currDirection == UP || currDirection == DOWN) {
 				return true;
 			}

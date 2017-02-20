@@ -71,7 +71,7 @@ public class SequentialAStar extends HeuristicSearch {
 						closed[currHeuristic].add(currentNode);
 						nodesOpened++;
 					}
-				} else { // if inadMinKey < w2 * anchorMinKey
+				} else { // if inadMinKey > w2 * anchorMinKey
 					if (gValues[0].get(goalNode) <= fValues[0].get(open[0].peek())) {
 						if (gValues[0].get(goalNode) < Double.POSITIVE_INFINITY) {
 							nodesExpanded = closed[currHeuristic].size();
