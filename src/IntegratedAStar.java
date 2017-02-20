@@ -11,7 +11,6 @@ public class IntegratedAStar extends HeuristicSearch {
 	protected HashSet<Node> closedANCHOR;
 	protected HashMap<Node, Double>[] fValues;
 	protected HashMap<Node, Double> gValues;
-	//protected HashMap<Node, Node> parentPointers;
 	protected double w1, w2;
 	
 
@@ -23,7 +22,6 @@ public class IntegratedAStar extends HeuristicSearch {
 		closedANCHOR = new HashSet<Node>();
 		fValues = new HashMap[numOfHeuristics];
 		gValues = new HashMap<Node, Double>();
-		//parentPointers = new HashMap[numOfHeuristics];*/
 		this.w1 = w1;
 		this.w2 = w2;
 	}
@@ -52,7 +50,6 @@ public class IntegratedAStar extends HeuristicSearch {
 		}
 		
 		while (fValues[0].get(open[0].peek()) < Double.POSITIVE_INFINITY) {
-			//System.out.println("CHECKIN");
 			
 			for (int currHeuristic = 1; currHeuristic < numOfHeuristics; currHeuristic++) {
 				
@@ -61,7 +58,6 @@ public class IntegratedAStar extends HeuristicSearch {
 				if (inadMinKey <= w2 * fValues[0].get(open[0].peek())) {
 					if (gValues.get(goalNode) <= inadMinKey) {
 						if (gValues.get(goalNode) < Double.POSITIVE_INFINITY) {
-							//System.out.println("Path found cunt!");
 							nodesExpanded = closedINAD.size();
 							return optimalPath(goalNode);
 						}	
@@ -92,20 +88,7 @@ public class IntegratedAStar extends HeuristicSearch {
 		System.out.println("NO PATH!");
 		return null;
 	}
-	
-/*	protected ArrayList<Node> returnPath(Node currentNode, int currHeuristic) {
-		
-		ArrayList<Node> path = new ArrayList<Node>();
-		Node tmp = currentNode;
-		
-		while (tmp != null) {
-			path.add(0, tmp);
-			tmp = parentPointers[currHeuristic].get(tmp);
-		}
-		
-		return path;
-	}*/
-	
+
 	protected double key (Node currentNode, int currHeuristic) {
 		heuristicSwitch(heuristics[currHeuristic], currentNode);
 		return gValues.get(currentNode) + (w1 * currentNode.getH());

@@ -25,8 +25,11 @@ public class Test {
 		assertTrue("Should be equal", c2.equals(c4));
 		
 		//getMemoryInfo();
-		//phase1();
-		phase2();
+		TileMap[] maps = generateMaps();
+		Coords[][][] coords = generateCoords(maps);
+		phase1(maps, coords);
+		System.out.println("------");
+		phase2(maps, coords);
 		
 	}
 	
@@ -47,9 +50,9 @@ public class Test {
 
 	}
 	
-	public void phase1() {
-		TileMap[] maps = generateMaps();
-		Coords[][][] coords = generateCoords(maps);
+	public void phase1(TileMap [] maps, Coords[][][] coords) {
+		/*TileMap[] maps = generateMaps();
+		Coords[][][] coords = generateCoords(maps);*/
 		String[] heuristics = {"Diagonal", "Manhattan", "Euclidean", "Enhanced Manhattan", "Fast Approximate"};
 
 		
@@ -133,9 +136,9 @@ public class Test {
 	/**
 	 * 
 	 */
-	public void phase2() {
-		TileMap[] maps = generateMaps();
-		Coords[][][] coords = generateCoords(maps);
+	public void phase2(TileMap[] maps, Coords[][][] coords) {
+		/*TileMap[] maps = generateMaps();
+		Coords[][][] coords = generateCoords(maps);*/
 		
 		for (int i = 0; i < 5; i++) {
 			

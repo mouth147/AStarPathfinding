@@ -62,7 +62,6 @@ public class SequentialAStar extends HeuristicSearch {
 				if (inadMinKey <= w2 * fValues[0].get(open[0].peek())) {
 					if (gValues[currHeuristic].get(goalNode) <= inadMinKey) {
 						if (gValues[currHeuristic].get(goalNode) < Double.POSITIVE_INFINITY) {
-							//System.out.println("Path found!");
 							nodesExpanded = closed[currHeuristic].size();
 							return returnPath(goalNode, currHeuristic);
 						}	
@@ -75,7 +74,6 @@ public class SequentialAStar extends HeuristicSearch {
 				} else { // if inadMinKey < w2 * anchorMinKey
 					if (gValues[0].get(goalNode) <= fValues[0].get(open[0].peek())) {
 						if (gValues[0].get(goalNode) < Double.POSITIVE_INFINITY) {
-							//System.out.println("Path found!");
 							nodesExpanded = closed[currHeuristic].size();
 							return returnPath(goalNode, 0);
 						}
